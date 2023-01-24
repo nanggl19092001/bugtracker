@@ -2,13 +2,12 @@ import { Express } from "express"
 
 const logger = require('../utils/logger')
 const IndexController: IndexController = require('../controllers/index.controller')
+const UserRouter = require('./user.route')
 const jwt = require('jsonwebtoken')
 
 function route(app: Express) {
 
-    app.get('/test', (req,res) => {
-        return res.send(JSON.stringify({data: "some data"}))
-    })
+    app.use('/user', UserRouter)
 
     app.post('/auth/signin', IndexController.signIn)
 

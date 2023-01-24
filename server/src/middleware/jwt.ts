@@ -4,9 +4,22 @@ const jwt = require('jsonwebtoken')
 const secret = process.env.ACCESS_TOKEN_SECRET
 
 function SignJWT(data: any){
-    return jwt.sign(data, secret)
+    try{
+        let jwtSign = jwt.sign(data, secret)
+        return jwtSign
+    }
+    catch(err){
+        return err
+    }
 }
 
-function validateJWT(token: String){}
+function validateJWT(token: String){
+    try {
+        let validateResult = jwt.verify(token, secret)
+        return validateResult
+    } catch (error) {
+        return false
+    }
+}
 
-module.exports = {SignJWT: SignJWT}
+module.exports = {SignJWT: SignJWT, ValidateJWT: validateJWT}
