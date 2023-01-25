@@ -1,28 +1,10 @@
-import logo from './logo.svg';
-import { useEffect, useState } from 'react'
+import {Route, Routes, BrowserRouter} from "react-router-dom"
+import Register from "./pages/register";
 
 function App() {
-
-  const [testData, setTestData] = useState()
-  useEffect(() => {
-    fetch('http://localhost:3000/test')
-    .then(res => res.json())
-    .then(res => {
-      setTestData(res.data)
-    })
-  }, [])
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        {testData ? testData : <></>} 
-      </header>
-    </div>
-  );
+    return(
+        <Register/>
+    )
 }
 
 export default App;

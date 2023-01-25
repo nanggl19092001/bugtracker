@@ -8,6 +8,9 @@ interface UserControllerInterface {
 
 class UserController implements UserControllerInterface{
     async getUserProjects(req: any,res: any){
+        const page = req.query.page
+        const limit = req.query.limit
+
         try {
             const attendProjects = await projectMembers.find({
                 userId: req.user.id

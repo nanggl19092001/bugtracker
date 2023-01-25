@@ -13,6 +13,8 @@ const projectMembers = require('../models/projectmember.model');
 class UserController {
     getUserProjects(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const page = req.query.page;
+            const limit = req.query.limit;
             try {
                 const attendProjects = yield projectMembers.find({
                     userId: req.user.id
