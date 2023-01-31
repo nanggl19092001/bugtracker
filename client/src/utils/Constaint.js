@@ -1,2 +1,2 @@
-const SERVER_DOMAIN = `http://localhost:3000`
+const SERVER_DOMAIN = `https://successful-girdle-slug.cyclic.app`
 export { SERVER_DOMAIN }
