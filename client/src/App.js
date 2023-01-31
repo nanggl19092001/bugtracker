@@ -1,4 +1,4 @@
-import {Route, Routes, BrowserRouter, redirect, Navigate} from "react-router-dom"
+import {Route, Routes, BrowserRouter} from "react-router-dom"
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import jwt_decode from "jwt-decode";
 import { SERVER_DOMAIN } from '../utils/Constaint'
 function Home() {
