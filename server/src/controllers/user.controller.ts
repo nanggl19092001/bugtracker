@@ -16,9 +16,7 @@ class UserController implements UserControllerInterface{
                 userId: req.user.id
             })
 
-            const projects = await projectModel.find({
-                creator: req.user.id
-            })
+            const projects = []
 
             for(let attendProject of attendProjects){
                 projects.push(await projectModel.findOne({_id: attendProject.projectId}))
@@ -46,19 +44,27 @@ class UserController implements UserControllerInterface{
             return res.send(JSON.stringify({status: 400, message: "Invalid deadline"}))
         }
 
-        projectModel.create({
-            name: name,
-            description: description,
-            end: end,
-            creator: creator
-        }, (err: Error, result: JSON) => {
-            if(err){
-                return res.send(JSON.stringify({status: 500, message: err}))
-            }
-            else{
-                return res.send(JSON.stringify({status: 200, message: "Project created successfully!"}))
-            }
-        })
+        try{
+            const result = await projectModel.create({
+                name: name,
+                description: description,
+                end: end,
+                creator: creator
+            })
+
+            const projectCreatedId = result.id
+
+            await projectMembers.create({
+                userId: creator,
+                projectId: projectCreatedId
+            })
+
+            return res.send(JSON.stringify({status: 200, message: "Project created"}))
+        }
+        catch (e) {
+            return res.send(JSON.stringify({status: 500, message: e}))
+        }
+        
     }
 }
 

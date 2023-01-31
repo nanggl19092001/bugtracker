@@ -19,9 +19,7 @@ class UserController {
                 const attendProjects = yield projectMembers.find({
                     userId: req.user.id
                 });
-                const projects = yield projectModel.find({
-                    creator: req.user.id
-                });
+                const projects = [];
                 for (let attendProject of attendProjects) {
                     projects.push(yield projectModel.findOne({ _id: attendProject.projectId }));
                 }
@@ -46,19 +44,23 @@ class UserController {
             if (today > endDate) {
                 return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
             }
-            projectModel.create({
-                name: name,
-                description: description,
-                end: end,
-                creator: creator
-            }, (err, result) => {
-                if (err) {
-                    return res.send(JSON.stringify({ status: 500, message: err }));
-                }
-                else {
-                    return res.send(JSON.stringify({ status: 200, message: "Project created successfully!" }));
-                }
-            });
+            try {
+                const result = yield projectModel.create({
+                    name: name,
+                    description: description,
+                    end: end,
+                    creator: creator
+                });
+                const projectCreatedId = result.id;
+                yield projectMembers.create({
+                    userId: creator,
+                    projectId: projectCreatedId
+                });
+                return res.send(JSON.stringify({ status: 200, message: "Project created" }));
+            }
+            catch (e) {
+                return res.send(JSON.stringify({ status: 500, message: e }));
+            }
         });
     }
 }
