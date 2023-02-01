@@ -13,12 +13,12 @@ const projectMembers = require('../models/projectmember.model');
 class UserController {
     getUserProjects(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const page = req.query.page;
-            const limit = req.query.limit;
+            const offset = req.query.offset || 0;
+            const limit = req.query.limit || Infinity;
             try {
                 const attendProjects = yield projectMembers.find({
                     userId: req.user.id
-                });
+                }).skip(offset).limit(limit);
                 const projects = [];
                 for (let attendProject of attendProjects) {
                     projects.push(yield projectModel.findOne({ _id: attendProject.projectId }));
@@ -60,6 +60,22 @@ class UserController {
             }
             catch (e) {
                 return res.send(JSON.stringify({ status: 500, message: e }));
+            }
+        });
+    }
+    addProjectMember(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newMemberId = req.body.user;
+            const projectId = req.body.project;
+            try {
+                yield projectMembers.create({
+                    userId: newMemberId,
+                    projectId: projectId
+                });
+                return res.send(JSON.stringify({ status: 200, message: "Member added" }));
+            }
+            catch (error) {
+                return res.send(JSON.stringify({ status: 500, message: error }));
             }
         });
     }

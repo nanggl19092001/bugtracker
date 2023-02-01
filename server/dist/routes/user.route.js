@@ -16,4 +16,5 @@ Router.use('/', (req, res, next) => {
 });
 Router.get('/project', UserControllers.getUserProjects);
 Router.post('/project', UserControllers.createProject);
+Router.post('/project/member', UserControllers.addProjectMember);
 module.exports = Router;
