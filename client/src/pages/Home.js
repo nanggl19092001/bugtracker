@@ -1,16 +1,18 @@
-import React, { useEffect } from "react";
+import React, {useEffect, useContext } from "react";
 import jwt_decode from "jwt-decode";
-import { SERVER_DOMAIN } from '../utils/Constaint'
+import { AppContext } from "../Context/AppContext";
+import { SERVER_DOMAIN } from "../utils/Constaint";
+
 function Home() {
-  const token = localStorage.getItem("token");
-  const user = jwt_decode(token)
+  const {token} = useContext(AppContext);
+  const user = jwt_decode(token);
   useEffect(() => {
     function fetchData() {
       fetch(`${SERVER_DOMAIN}/user/project?token=` + token, {
         method: "GET",
       })
         .then((res) => res.json())
-        .then((data) => console.log(data))
+        .then((data) => data)
         .catch((error) => console.error("Error:", error))
     }
     fetchData();

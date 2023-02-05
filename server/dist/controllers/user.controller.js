@@ -8,20 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const projectModel = require('../models/project.model');
-const projectMembers = require('../models/projectmember.model');
+const projectMod = require('../models/project.model');
+const projectMembersMod = require('../models/projectmember.model');
+const accountMod = require('../models/account.model');
 class UserController {
+    //Get projects which user attended
     getUserProjects(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const offset = req.query.offset || 0;
             const limit = req.query.limit || Infinity;
             try {
-                const attendProjects = yield projectMembers.find({
+                const attendProjects = yield projectMembersMod.find({
                     userId: req.user.id
                 }).skip(offset).limit(limit);
                 const projects = [];
                 for (let attendProject of attendProjects) {
-                    projects.push(yield projectModel.findOne({ _id: attendProject.projectId }));
+                    projects.push(yield projectMod.findOne({ _id: attendProject.projectId }));
                 }
                 return res.send(JSON.stringify({ status: 200, data: projects }));
             }
@@ -45,14 +47,14 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
             }
             try {
-                const result = yield projectModel.create({
+                const result = yield projectMod.create({
                     name: name,
                     description: description,
                     end: end,
                     creator: creator
                 });
                 const projectCreatedId = result.id;
-                yield projectMembers.create({
+                yield projectMembersMod.create({
                     userId: creator,
                     projectId: projectCreatedId
                 });
@@ -68,7 +70,7 @@ class UserController {
             const newMemberId = req.body.user;
             const projectId = req.body.project;
             try {
-                yield projectMembers.create({
+                yield projectMembersMod.create({
                     userId: newMemberId,
                     projectId: projectId
                 });
@@ -77,6 +79,65 @@ class UserController {
             catch (error) {
                 return res.send(JSON.stringify({ status: 500, message: error }));
             }
+        });
+    }
+    searchUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const keyword = req.query.key;
+            if (!keyword) {
+                return res.send(JSON.stringify({ status: 400, message: "Missing searching information" }));
+            }
+            const regexForFindingUser = new RegExp(`${keyword}`, "i");
+            accountMod.find({
+                $or: [
+                    {
+                        email: regexForFindingUser
+                    },
+                    {
+                        firstname: regexForFindingUser
+                    },
+                    {
+                        lastname: regexForFindingUser
+                    }
+                ]
+            }, {
+                password: 0
+            }, (result, error) => {
+                if (error) {
+                    return res.send(JSON.stringify({ status: 500, message: error }));
+                }
+                return res.send(JSON.stringify({ status: 200, data: result }));
+            });
+        });
+    }
+    deleteProjectMember(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = req.body.id;
+            const project = req.body.project_id;
+            if (!user || !project) {
+                return res.send(JSON.stringify({ status: 400, message: "Missing information" }));
+            }
+            projectMembersMod.delete({
+                userId: user,
+                projectId: project
+            }, (result, error) => {
+                if (error) {
+                    return res.send(JSON.stringify({ status: 500, message: error }));
+                }
+                return res.send(JSON.stringify({ status: 200, message: result }));
+            });
+        });
+    }
+    deleteProject(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    alterProject(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    createProjectComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }

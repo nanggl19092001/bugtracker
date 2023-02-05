@@ -1,10 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../Context/AppContext";
-import { SERVER_DOMAIN } from '../utils/Constaint'
+import { SERVER_DOMAIN } from "../utils/Constaint";
 
 function Login() {
-  const {notify} = useContext(AppContext)
+  const {notify, setNotify} = useContext(AppContext)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -20,6 +20,9 @@ function Login() {
     try {
       let res = await fetch(`${SERVER_DOMAIN}/auth/signin`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           email: email,
           password: password,
@@ -44,6 +47,10 @@ function Login() {
         // setNotify('')
         console.log("Loaded");
     }
+
+  useEffect(() => {
+
+  },)
   return (
     <section className="h-screen">
       <div className="relative px-6 h-full text-gray-800 z-0">
@@ -68,15 +75,11 @@ function Login() {
     </div>}
         <div className="flex xl:justify-center lg:justify-between justify-center items-center flex-wrap h-full g-6">
           <div className="grow-0 shrink-1 md:shrink-0 basis-auto xl:w-6/12 lg:w-6/12 md:w-9/12 mb-12 md:mb-0">
-            <img
-              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
-              className="w-full"
-              alt="Sample"
-            />
+            <img className="w-full" src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp" alt="good"/>
           </div>
           <div className="xl:ml-20 xl:w-5/12 lg:w-5/12 md:w-8/12 mb-12 md:mb-0">
             <form>
-              <div className="flex flex-row items-center justify-center justify-start">
+              <div className="flex flex-row items-center justify-center">
                 <p className="text-lg mb-0 mr-4">Sign in with</p>
                 <button
                   type="button"

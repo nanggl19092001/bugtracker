@@ -1,13 +1,14 @@
-import {Route, Routes, BrowserRouter} from "react-router-dom"
+import {Route, Routes, BrowserRouter} from "react-router-dom";
+import {useContext} from "react";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Logout from "./pages/Logout";
-import { AppProvider } from "./Context/AppContext";
+import {AppProvider } from "./Context/AppContext";
 
 function App() {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');    
     return(
         <AppProvider>
             <BrowserRouter>
