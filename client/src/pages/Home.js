@@ -1,30 +1,19 @@
-import React, {useEffect, useContext } from "react";
-import jwt_decode from "jwt-decode";
-import { AppContext } from "../Context/AppContext";
-import { SERVER_DOMAIN } from "../utils/Constaint";
 
+import Navbar from "../components/Navbar";
+import Content from "../components/Content";
+import Footer from "../components/Footer";
+import { HomeProvider } from "../Context/HomeContext";
 function Home() {
-  const {token} = useContext(AppContext);
-  const user = jwt_decode(token);
-  useEffect(() => {
-    function fetchData() {
-      fetch(`${SERVER_DOMAIN}/user/project?token=` + token, {
-        method: "GET",
-      })
-        .then((res) => res.json())
-        .then((data) => data)
-        .catch((error) => console.error("Error:", error))
-    }
-    fetchData();
-  }, [token]);
+  
   return (
-    <div>
-      <h1>Home</h1>
-      <h2>Hello {user.firstname +' '+ user.lastname}</h2>
-      <a href="/logout" className="text-base text-blue-700">
-        Logout
-      </a>
+    <div className="grid grid-cols-5 2xl:grid-cols-8">
+      <HomeProvider>
+        <Navbar />
+        <Content />
+        <Footer />
+      </HomeProvider>
     </div>
+    
   );
 }
 

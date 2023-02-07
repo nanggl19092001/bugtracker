@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react'
 import {useNavigate} from "react-router-dom";
 import { AppContext } from '../Context/AppContext';
-import { SERVER_DOMAIN } from '../utils/Constaint';
+import { SERVER_DOMAIN } from '../utils/Constaint'
 
 function Register() {
     const {setNotify} = useContext(AppContext)
@@ -44,7 +44,7 @@ function Register() {
             let res = await fetch(`${SERVER_DOMAIN}/auth/signup`, {
                 method:"POST",
                 headers:{
-                  "Content-Type":"application/json",
+                  'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     email:email,
@@ -75,7 +75,7 @@ function Register() {
             <img
               src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
               className="w-full"
-              alt="good"
+              alt="Sample"
             />
           </div>
           <div className="xl:ml-20 xl:w-5/12 lg:w-5/12 md:w-8/12 mb-12 md:mb-0">
