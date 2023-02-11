@@ -1,2 +1,2 @@
-const SERVER_DOMAIN = `https://erin-careful-fly.cyclic.app/`
+const SERVER_DOMAIN = `http://localhost:5000`
 export { SERVER_DOMAIN }

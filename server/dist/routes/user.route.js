@@ -6,7 +6,7 @@ const UserControllers = require('../controllers/user.controller');
 Router.use('/', (req, res, next) => {
     const validateJwtResult = ValidateJWT(req.query.token);
     if (validateJwtResult) {
-        console.log(validateJwtResult);
+        //console.log(validateJwtResult)
         req.user = validateJwtResult;
         return next();
     }
@@ -17,4 +17,6 @@ Router.use('/', (req, res, next) => {
 Router.get('/project', UserControllers.getUserProjects);
 Router.post('/project', UserControllers.createProject);
 Router.post('/project/member', UserControllers.addProjectMember);
+Router.delete('/project/member', UserControllers.deleteProjectMember);
+Router.get('/search', UserControllers.searchUser);
 module.exports = Router;

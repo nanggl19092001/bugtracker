@@ -8,7 +8,7 @@ const JwtMiddleware = require('../middleware/jwt')
 interface IndexControllerInterface {
     signIn(req: any, res: any): Promise<void>
     signUp(req: any, res: any): Promise<void>
-    auth(req: any, res: any): Promise<Express.Response>
+    auth(req: any, res: any): Promise<void>
 }
 
 class IndexController implements IndexControllerInterface{
@@ -87,7 +87,7 @@ class IndexController implements IndexControllerInterface{
         }
     }
 
-    async auth(req: any, res: any): Promise<Express.Response>{
+    async auth(req: any, res: any): Promise<void>{
         return res
     }
 }

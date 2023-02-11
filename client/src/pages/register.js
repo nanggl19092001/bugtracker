@@ -1,6 +1,7 @@
 import React, {useContext, useState} from 'react'
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import { AppContext } from '../Context/AppContext';
+import { SERVER_DOMAIN } from '../utils/Constaint'
 
 function Register() {
     const {setNotify} = useContext(AppContext)
@@ -40,10 +41,10 @@ function Register() {
             return;
         }
         try {
-            let res = await fetch("http://localhost:5000/auth/signup", {
+            let res = await fetch(`${SERVER_DOMAIN}/auth/signup`, {
                 method:"POST",
                 headers:{
-                  "Content-Type":"application/json",
+                  'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     email:email,
@@ -74,7 +75,7 @@ function Register() {
             <img
               src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
               className="w-full"
-              alt="good"
+              alt="Sample"
             />
           </div>
           <div className="xl:ml-20 xl:w-5/12 lg:w-5/12 md:w-8/12 mb-12 md:mb-0">
@@ -136,12 +137,8 @@ function Register() {
                 </button>
                 <p className="text-sm font-semibold mt-2 pt-1 mb-0">
                   Do have an account?
-                  <a
-                    href="/login"
-                    className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out"
-                  >
-                    Login
-                  </a>
+                  <Link to="/login" 
+                  className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out">Login</Link>
                 </p>
                 {message ? 
                 <div className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base text-red-700 mb-3" role="alert">

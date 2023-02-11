@@ -1,14 +1,15 @@
-import React, { useContext } from "react";
-import { HomeContext } from "../Context/HomeContext";
-import Content1 from "./content/Content1";
-import Content2 from "./content/Content2";
+import Header from "./Header";
+import Dashboard from "./content/Dashboard";
+import Ticket from "./content/Ticket";
+import ProjectDetail from "./content/ProjectDetail";
 
-function Content() {
-    const {page} = useContext(HomeContext)
+function Content({id, pages}) {
     return ( 
-        <div className="col-span-4 bg-gray-200 min-h-screen">
-            <h2 className="px-8">This is Content</h2>
-            {page === '1' ? <Content1 /> : <Content2 />}
+        <div className="col-span-4 bg-gray-200 min-h-screen xl:col-span-7">
+            <Header />
+            {pages === 'dashboard' && <Dashboard/>}
+            {pages === 'ticket' && <Ticket/>}
+            {id && <ProjectDetail id = {id}/>}
         </div>
     );
 }
