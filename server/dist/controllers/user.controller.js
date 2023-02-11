@@ -71,9 +71,6 @@ class UserController {
             const newMemberId = req.body.user;
             const projectId = req.body.project;
             try {
-                if (!valCre(req.user.id, projectId)) {
-                    return res.send(JSON.stringify({ status: 401, message: "Only creator can add member to this project" }));
-                }
                 const existMember = yield projectMembersMod.find({
                     userId: newMemberId,
                     projectId: projectId
@@ -169,6 +166,15 @@ class UserController {
             catch (error) {
                 return res.send(JSON.stringify({ status: 500, message: error }));
             }
+            projectMembersMod.delete({
+                userId: user,
+                projectId: project
+            }, (result, error) => {
+                if (error) {
+                    return res.send(JSON.stringify({ status: 500, message: error }));
+                }
+                return res.send(JSON.stringify({ status: 200, message: result }));
+            });
         });
     }
     alterProject(req, res) {

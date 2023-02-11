@@ -187,6 +187,17 @@ class UserController implements UserControllerInterface{
         } catch (error) {
             return res.send(JSON.stringify({status: 500, message: error}))
         }
+
+        projectMembersMod.delete({
+            userId: user,
+            projectId: project
+        }, (result: any, error: any) => {
+            if(error){
+                return res.send(JSON.stringify({status: 500, message: error}))
+            }
+
+            return res.send(JSON.stringify({status: 200, message: result}))
+        })
     }
 
     async alterProject(req: any, res: any): Promise<void> {
