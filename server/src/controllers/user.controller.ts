@@ -1,6 +1,7 @@
 const projectMod = require('../models/project.model')
 const projectMembersMod = require('../models/projectmember.model')
 const accountMod = require('../models/account.model')
+const valCre = require('../middleware/validateCreator')
 
 interface UserControllerInterface {
     getUserProjects(req: any, res: any): Promise<void>
@@ -81,6 +82,17 @@ class UserController implements UserControllerInterface{
         const projectId = req.body.project;
 
         try {
+            const existMember = await projectMembersMod.find(
+                {
+                    userId: newMemberId,
+                    projectId: projectId
+                }
+            )
+
+            if(existMember.length > 0){
+                return res.send(JSON.stringify({status: 406, message: "Member already added into project"}))
+            }
+
             await projectMembersMod.create({
                 userId: newMemberId,
                 projectId: projectId
@@ -130,6 +142,51 @@ class UserController implements UserControllerInterface{
         if(!user || !project){
             return res.send(JSON.stringify({status: 400, message: "Missing information"}))
         }
+        try{
+            if(!valCre(req.user.id, project)){
+                return res.send(JSON.stringify({status: 401, message: "Only creator can add member to this project"}))
+            }
+    
+            projectMembersMod.deleteOne({
+                userId: user,
+                projectId: project
+            }, (error: any, result: any) => {
+                if(error){
+                    return res.send(JSON.stringify({status: 500, message: error}))
+                }
+    
+                return res.send(JSON.stringify({status: 200, message: result}))
+            })
+        } catch (e) {
+            return res.send(JSON.stringify({status: 500, message: e}))
+        }
+        
+    }
+
+    async deleteProject(req: any, res: any): Promise<void> {
+        const project = req.body.id
+
+        if(!project) {
+            return res.send(JSON.stringify({status: 400, message: "Missing information"}))
+        }
+
+        try {
+            if(!valCre(req.user.id, project)){
+                return res.send(JSON.stringify({status: 401, message: "Only creator can add member to this project"}))
+            }
+
+            projectMod.deleteOne({
+                _id: project
+            }, (error: any, result: any) => {
+                if(error){
+                    return res.send(JSON.stringify({status: 500, message: error}))
+                }
+    
+                return res.send(JSON.stringify({status: 200, message: result}))
+            })
+        } catch (error) {
+            return res.send(JSON.stringify({status: 500, message: error}))
+        }
 
         projectMembersMod.delete({
             userId: user,
@@ -141,10 +198,6 @@ class UserController implements UserControllerInterface{
 
             return res.send(JSON.stringify({status: 200, message: result}))
         })
-    }
-
-    async deleteProject(req: any, res: any): Promise<void> {
-        
     }
 
     async alterProject(req: any, res: any): Promise<void> {

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
+const valCre = require('../middleware/validateCreator');
 class UserController {
     //Get projects which user attended
     getUserProjects(req, res) {
@@ -70,6 +71,13 @@ class UserController {
             const newMemberId = req.body.user;
             const projectId = req.body.project;
             try {
+                const existMember = yield projectMembersMod.find({
+                    userId: newMemberId,
+                    projectId: projectId
+                });
+                if (existMember.length > 0) {
+                    return res.send(JSON.stringify({ status: 406, message: "Member already added into project" }));
+                }
                 yield projectMembersMod.create({
                     userId: newMemberId,
                     projectId: projectId
@@ -117,6 +125,47 @@ class UserController {
             if (!user || !project) {
                 return res.send(JSON.stringify({ status: 400, message: "Missing information" }));
             }
+            try {
+                if (!valCre(req.user.id, project)) {
+                    return res.send(JSON.stringify({ status: 401, message: "Only creator can add member to this project" }));
+                }
+                projectMembersMod.deleteOne({
+                    userId: user,
+                    projectId: project
+                }, (error, result) => {
+                    if (error) {
+                        return res.send(JSON.stringify({ status: 500, message: error }));
+                    }
+                    return res.send(JSON.stringify({ status: 200, message: result }));
+                });
+            }
+            catch (e) {
+                return res.send(JSON.stringify({ status: 500, message: e }));
+            }
+        });
+    }
+    deleteProject(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const project = req.body.id;
+            if (!project) {
+                return res.send(JSON.stringify({ status: 400, message: "Missing information" }));
+            }
+            try {
+                if (!valCre(req.user.id, project)) {
+                    return res.send(JSON.stringify({ status: 401, message: "Only creator can add member to this project" }));
+                }
+                projectMod.deleteOne({
+                    _id: project
+                }, (error, result) => {
+                    if (error) {
+                        return res.send(JSON.stringify({ status: 500, message: error }));
+                    }
+                    return res.send(JSON.stringify({ status: 200, message: result }));
+                });
+            }
+            catch (error) {
+                return res.send(JSON.stringify({ status: 500, message: error }));
+            }
             projectMembersMod.delete({
                 userId: user,
                 projectId: project
@@ -126,10 +175,6 @@ class UserController {
                 }
                 return res.send(JSON.stringify({ status: 200, message: result }));
             });
-        });
-    }
-    deleteProject(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
         });
     }
     alterProject(req, res) {
