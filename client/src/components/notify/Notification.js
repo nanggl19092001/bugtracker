@@ -11,11 +11,15 @@ const Notification = ({ message, type }) => {
     return () => clearTimeout(timer);
   }, [type]);
 
+  setTimeout(() => {
+    message = ""
+  }, 5000);
+  
   if (!isVisible) {
     return null;
   }
   return (
-    <div className="absolute flex flex-col justify-center mt-2 animate-go-in">
+    <div className="absolute z-100 flex flex-col justify-center mt-2 animate-go-in">
       <div
         className={`${color} shadow-lg mx-auto w-96 max-w-full text-sm pointer-events-auto bg-clip-padding rounded-lg block mb-3`}
         id="static-example"

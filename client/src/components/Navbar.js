@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate} from "react-router-dom";
 import { HomeContext } from "../Context/HomeContext";
 function Navbar() {
-  const { setPage } = useContext(HomeContext);
+  const { setPage} = useContext(HomeContext);
   const navigate = useNavigate();
 
   const handlePage = (page) => {
@@ -12,11 +12,12 @@ function Navbar() {
     localStorage.removeItem("token");
     localStorage.clear();
     navigate("/login");
+    window.location.reload()
   };
 
   return (
     <div
-      className="col-span-1 h-screen bg-bg-nav
+      className="col-span-1 h-full bg-bg-nav
     drop-shadow-xl"
     >
       <ul className="relative">
@@ -33,7 +34,7 @@ function Navbar() {
           </NavLink>
         </li>
         <NavLink
-          to="#a"
+          to="/dashboard"
           data-mdb-ripple="true"
           data-mdb-ripple-color="dark"
           onClick={() => handlePage("1")}
@@ -63,7 +64,7 @@ function Navbar() {
           </li>
         </NavLink>
         <NavLink
-          to="#b"
+          to="/ticket"
           data-mdb-ripple="true"
           data-mdb-ripple-color="dark"
           onClick={() => handlePage("2")}
@@ -89,17 +90,13 @@ function Navbar() {
                 d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
               ></path>
             </svg>
-            Projects
+            Tickets
           </li>
         </NavLink>
-        <NavLink
-          to="#b"
-          data-mdb-ripple="true"
-          data-mdb-ripple-color="dark"
-          onClick={() => handlePage("2")}
-        >
-          <li
-            className="relative flex flex-row items-center
+        <a href="#a" onClick={handleLogout}>
+
+        <li
+        className="relative flex flex-row items-center
         text-red-500 py-4 px-6 overflow-hidden text-ellipsis whitespace-normal rounded
         hover:text-primary-nav
         hover:bg-white transition duration-300 ease-in-out"
@@ -121,7 +118,7 @@ function Navbar() {
             </svg>
             Logout
           </li>
-        </NavLink>
+        </a>
       </ul>
     </div>
   );

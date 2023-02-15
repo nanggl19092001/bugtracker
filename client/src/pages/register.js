@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react'
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import { AppContext } from '../Context/AppContext';
 import { SERVER_DOMAIN } from '../utils/Constaint'
 
@@ -137,12 +137,8 @@ function Register() {
                 </button>
                 <p className="text-sm font-semibold mt-2 pt-1 mb-0">
                   Do have an account?
-                  <a
-                    href="/login"
-                    className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out"
-                  >
-                    Login
-                  </a>
+                  <Link to="/login" 
+                  className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out">Login</Link>
                 </p>
                 {message ? 
                 <div className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base text-red-700 mb-3" role="alert">

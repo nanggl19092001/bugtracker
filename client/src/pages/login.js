@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Notification from "../components/notify/Notification";
 import { AppContext } from "../Context/AppContext";
 import { SERVER_DOMAIN } from "../utils/Constaint";
@@ -166,17 +166,13 @@ function Login({setIsLogin}) {
                 </button>
                 <p className="text-sm font-semibold mt-2 pt-1 mb-0">
                   Don't have an account?
-                  <a
-                    href="/register"
-                    className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out"
-                  >
-                    Register
-                  </a>
+                  <Link to="/register"
+                  className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out">Register</Link>
                 </p>
               </div>
               {message ? (
                 <div
-                  className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base red-yellow-700 mb-3"
+                  className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base red-yellow-700"
                   role="alert"
                 >
                   {message}
