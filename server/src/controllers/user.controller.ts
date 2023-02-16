@@ -188,10 +188,10 @@ class UserController implements UserControllerInterface{
             return res.send(JSON.stringify({status: 500, message: error}))
         }
 
-        projectMembersMod.delete({
+        projectMembersMod.deleteOne({
             userId: user,
             projectId: project
-        }, (result: any, error: any) => {
+        }, (error: any, result: any) => {
             if(error){
                 return res.send(JSON.stringify({status: 500, message: error}))
             }
