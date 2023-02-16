@@ -8,9 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
+const commentMod = require('../models/comment.model');
 const valCre = require('../middleware/validateCreator');
 class UserController {
     //Get projects which user attended
@@ -161,28 +163,81 @@ class UserController {
                         return res.send(JSON.stringify({ status: 500, message: error }));
                     }
                     return res.send(JSON.stringify({ status: 200, message: result }));
+                }).catch((err) => {
+                    if (err) {
+                        return res.send(JSON.stringify({ status: 500, message: "Bad request" }));
+                    }
                 });
             }
             catch (error) {
                 return res.send(JSON.stringify({ status: 500, message: error }));
             }
-            projectMembersMod.delete({
-                userId: user,
-                projectId: project
-            }, (result, error) => {
-                if (error) {
-                    return res.send(JSON.stringify({ status: 500, message: error }));
-                }
-                return res.send(JSON.stringify({ status: 200, message: result }));
-            });
         });
     }
     alterProject(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const project = req.body.projectId;
+            const name = req.body.name;
+            const description = req.body.description || " ";
+            const end = req.body.end;
+            if (!project || !end || !name) {
+                return res.send(JSON.stringify({ status: 400, message: "Missing important infomation" }));
+            }
+            try {
+                if (!valCre(req.user.id, project)) {
+                    return res.send(JSON.stringify({ status: 401, message: "Only creator can make change to this project" }));
+                }
+                projectMod.updateOne({
+                    _id: project
+                }, {
+                    name: name,
+                    description: description,
+                    end: end
+                }, (err, result) => {
+                    if (err) {
+                        return res.send(JSON.stringify({ status: 500, message: err }));
+                    }
+                    else {
+                        return res.send(JSON.stringify({ status: 200, message: "project updated" }));
+                    }
+                });
+            }
+            catch (error) {
+                return res.send(JSON.stringify({ status: 500, message: error }));
+            }
         });
     }
     createProjectComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const io = req.app.get('socketio');
+            const sender = req.user.id;
+            const content = req.body.content;
+            const type = req.body.type;
+            const receiveId = req.body.receiveId;
+            if (!sender || !content || !type || !receiveId) {
+                return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
+            }
+            try {
+                commentMod.create({
+                    sender: sender,
+                    content: content,
+                    type: type,
+                    receiveId: receiveId
+                }, (err, result) => {
+                    if (err) {
+                        return res.send(JSON.stringify({
+                            status: 500, message: err
+                        }));
+                    }
+                    io.to(receiveId).emit("message", result);
+                    return res.send(JSON.stringify({ status: 200, message: result }));
+                });
+            }
+            catch (error) {
+                return res.send(JSON.stringify({
+                    status: 500, message: error
+                }));
+            }
         });
     }
 }

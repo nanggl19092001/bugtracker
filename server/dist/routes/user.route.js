@@ -16,7 +16,10 @@ Router.use('/', (req, res, next) => {
 });
 Router.get('/project', UserControllers.getUserProjects);
 Router.post('/project', UserControllers.createProject);
+Router.put('/project', UserControllers.alterProject);
+Router.delete('/project', UserControllers.deleteProject);
 Router.post('/project/member', UserControllers.addProjectMember);
 Router.delete('/project/member', UserControllers.deleteProjectMember);
+Router.post('/project/comment', UserControllers.createProjectComment);
 Router.get('/search', UserControllers.searchUser);
 module.exports = Router;

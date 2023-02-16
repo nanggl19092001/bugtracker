@@ -1,7 +1,7 @@
 const Express = require('express')
 const Router = Express.Router()
 const {ValidateJWT} = require('../middleware/jwt')
-const UserControllers: UserController = require('../controllers/user.controller')
+const UserControllers = require('../controllers/user.controller')
 
 Router.use('/', (req: any,res: any,next: any) => {
     const validateJwtResult = ValidateJWT(req.query.token)
@@ -19,9 +19,15 @@ Router.get('/project', UserControllers.getUserProjects)
 
 Router.post('/project', UserControllers.createProject)
 
+Router.put('/project', UserControllers.alterProject)
+
+Router.delete('/project', UserControllers.deleteProject)
+
 Router.post('/project/member', UserControllers.addProjectMember)
 
 Router.delete('/project/member', UserControllers.deleteProjectMember)
+
+Router.post('/project/comment', UserControllers.createProjectComment)
 
 Router.get('/search', UserControllers.searchUser)
 
