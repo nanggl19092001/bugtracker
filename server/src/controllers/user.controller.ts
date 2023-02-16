@@ -1,7 +1,10 @@
+import { Socket } from "socket.io"
+
 const projectMod = require('../models/project.model')
 const projectMembersMod = require('../models/projectmember.model')
 const accountMod = require('../models/account.model')
 const valCre = require('../middleware/validateCreator')
+const commentMod = require('../models/comment.model')
 
 interface UserControllerInterface {
     getUserProjects(req: any, res: any): Promise<void>
@@ -181,30 +184,97 @@ class UserController implements UserControllerInterface{
                 if(error){
                     return res.send(JSON.stringify({status: 500, message: error}))
                 }
-    
-                return res.send(JSON.stringify({status: 200, message: result}))
+                projectMembersMod.deleteMany({
+                    projectId: project
+                }, (error: any, result: any) => {
+                    if(error){
+                        return res.send(JSON.stringify({status: 500, message: error}))
+                    }
+        
+                    return res.send(JSON.stringify({status: 200, message: result}))
+                })
             })
         } catch (error) {
             return res.send(JSON.stringify({status: 500, message: error}))
         }
 
-        projectMembersMod.deleteAll({
-            projectId: project
-        }, (error: any, result: any) => {
-            if(error){
-                return res.send(JSON.stringify({status: 500, message: error}))
-            }
-
-            return res.send(JSON.stringify({status: 200, message: result}))
-        })
+        
     }
 
     async alterProject(req: any, res: any): Promise<void> {
-        
+
+        const project: string = req.body.projectId;
+        const name: string = req.body.name
+        const description: string = req.body.description || " ";
+        const end: Date = req.body.end;
+
+        if(!project || !end ||!name){
+            return res.send(JSON.stringify({status: 400, message: "Missing important infomation"}))
+        }
+
+        try {
+
+            if(!valCre(req.user.id, project)){
+                return res.send(JSON.stringify({status: 401, message: "Only creator can make change to this project"}))
+            }
+
+            projectMod.updateOne(
+                {
+                    _id: project
+                },
+                {
+                    name: name,
+                    description: description,
+                    end: end
+                },
+                (err: any, result: any) => {
+                    if(err){
+                        return res.send(JSON.stringify({status: 500, message: err}))
+                    }
+                    else{
+                        return res.send(JSON.stringify({status: 200, message: "project updated"}))
+                    }
+                }
+            )
+
+        } catch (error) {
+            return res.send(JSON.stringify({status: 500, message: error}))
+        }
     }
 
     async createProjectComment(req: any, res: any): Promise<void> {
+        const io: Socket = req.app.get('socketio')
         
+        const sender = req.user.id;
+        const content = req.body.content;
+        const type = req.body.type;
+        const receiveId = req.body.receiveId;
+
+        if(!sender || !content || !type || !receiveId){
+            return res.send(JSON.stringify({status: 401, message: "Missing infomation"}))
+        }
+
+        try {
+            commentMod.create({
+                sender: sender,
+                content: content,
+                type: type,
+                receiveId: receiveId
+            }, (err: any, result: any) => {
+                if(err) {
+                    return res.send(JSON.stringify({
+                        status: 500, message: err
+                    }))
+                }
+                
+                io.to(receiveId).emit("message", result)
+                return res.send(JSON.stringify({status: 200, message: result}))
+            })
+        } catch (error) {
+            return res.send(JSON.stringify({
+                status: 500, message: error
+            }))
+        }
     }
 }
 
