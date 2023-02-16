@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
-const commentMod = require('../models/comment.model');
 const valCre = require('../middleware/validateCreator');
+const commentMod = require('../models/comment.model');
 class UserController {
     //Get projects which user attended
     getUserProjects(req, res) {
@@ -112,7 +112,7 @@ class UserController {
                 ]
             }, {
                 password: 0
-            }, (result, error) => {
+            }, (error, result) => {
                 if (error) {
                     return res.send(JSON.stringify({ status: 500, message: error }));
                 }
@@ -162,11 +162,14 @@ class UserController {
                     if (error) {
                         return res.send(JSON.stringify({ status: 500, message: error }));
                     }
-                    return res.send(JSON.stringify({ status: 200, message: result }));
-                }).catch((err) => {
-                    if (err) {
-                        return res.send(JSON.stringify({ status: 500, message: "Bad request" }));
-                    }
+                    projectMembersMod.deleteMany({
+                        projectId: project
+                    }, (error, result) => {
+                        if (error) {
+                            return res.send(JSON.stringify({ status: 500, message: error }));
+                        }
+                        return res.send(JSON.stringify({ status: 200, message: result }));
+                    });
                 });
             }
             catch (error) {
