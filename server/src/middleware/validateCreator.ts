@@ -11,6 +11,7 @@ async function validateCre(userId: string, projectId: string): Promise<Boolean> 
             if(error){
                 return false
             }
+            if(!result) return false;
             if(result.creator == userId) return true
             else return false 
         }

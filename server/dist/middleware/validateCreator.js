@@ -17,6 +17,8 @@ function validateCre(userId, projectId) {
             if (error) {
                 return false;
             }
+            if (!result)
+                return false;
             if (result.creator == userId)
                 return true;
             else

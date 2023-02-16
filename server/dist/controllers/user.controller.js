@@ -162,14 +162,16 @@ class UserController {
                     if (error) {
                         return res.send(JSON.stringify({ status: 500, message: error }));
                     }
-                    projectMembersMod.deleteMany({
-                        projectId: project
-                    }, (error, result) => {
-                        if (error) {
-                            return res.send(JSON.stringify({ status: 500, message: error }));
-                        }
-                        return res.send(JSON.stringify({ status: 200, message: result }));
-                    });
+                    else {
+                        projectMembersMod.deleteMany({
+                            projectId: project
+                        }, (error, result) => {
+                            if (error) {
+                                return res.send(JSON.stringify({ status: 500, message: error }));
+                            }
+                            return res.send(JSON.stringify({ status: 200, message: result }));
+                        });
+                    }
                 });
             }
             catch (error) {
