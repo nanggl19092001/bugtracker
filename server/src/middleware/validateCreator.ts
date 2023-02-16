@@ -2,6 +2,7 @@ const projectModel = require('../models/project.model')
 
 async function validateCre(userId: string, projectId: string): Promise<Boolean> {
 
+    
     projectModel.findOne(
         {
             _id: projectId
