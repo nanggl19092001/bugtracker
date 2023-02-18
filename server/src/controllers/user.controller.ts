@@ -1,5 +1,6 @@
 import { Socket } from "socket.io"
 
+const uploadFile = require('../middleware/uploadFile')
 const projectMod = require('../models/project.model')
 const projectMembersMod = require('../models/projectmember.model')
 const accountMod = require('../models/account.model')
@@ -15,6 +16,11 @@ interface UserControllerInterface {
     deleteProject(req: any, res: any): Promise<void>
     alterProject(req: any, res: any): Promise<void>
     createProjectComment(req: any, res: any): Promise<void>
+
+    createTicket(req: any, res: any): Promise<void>
+    alterTicket(req: any, res: any): Promise<void>
+    deleteTicket(req: any, res: any): Promise<void>
+    createTicketComment(req: any, res: any): Promise<void>
 }
 
 class UserController implements UserControllerInterface{
@@ -214,6 +220,12 @@ class UserController implements UserControllerInterface{
             return res.send(JSON.stringify({status: 400, message: "Missing important infomation"}))
         }
 
+        let today = new Date()
+        let endDate = new Date(end)
+        if(today > endDate){
+            return res.send(JSON.stringify({status: 400, message: "Invalid deadline"}))
+        }
+
         try {
 
             if(!valCre(req.user.id, project)){
@@ -278,6 +290,23 @@ class UserController implements UserControllerInterface{
             }))
         }
     }
+
+    async createTicket(req: any, res: any){
+
+    }
+
+    async alterTicket(req: any, res: any){
+
+    }
+
+    async deleteTicket(req: any, res: any){
+
+    }
+
+    async createTicketComment(req: any, res: any){
+
+    }
+
 }
 
 module.exports = new UserController

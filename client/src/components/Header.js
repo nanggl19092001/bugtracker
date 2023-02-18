@@ -13,7 +13,7 @@ function Header() {
         window.location.reload();
       };
   return (
-    <div className="header w-full h-14 bg-white drop-shadow-sm">
+    <div className="header sticky top-0 w-full h-14 bg-white drop-shadow-sm">
       <div className="search flex w-1/2 h-full justify-start items-center float-left">
         <svg
           className="w-6 h-full text-slate-400 mx-3"

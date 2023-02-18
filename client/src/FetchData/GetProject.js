@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { HomeContext } from "../Context/HomeContext";
+
 
 const GetProject = (url) => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { reload } = useContext(HomeContext)
   useEffect(() => {
     const abortCont = new AbortController();
 
@@ -28,7 +30,7 @@ const GetProject = (url) => {
         }
       });
     return () => abortCont.abort();
-  }, [url]);
+  }, [url, reload]);
 
   return { data, isLoading, error };
 };

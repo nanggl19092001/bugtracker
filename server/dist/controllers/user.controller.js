@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const uploadFile = require('../middleware/uploadFile');
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
@@ -188,6 +189,11 @@ class UserController {
             if (!project || !end || !name) {
                 return res.send(JSON.stringify({ status: 400, message: "Missing important infomation" }));
             }
+            let today = new Date();
+            let endDate = new Date(end);
+            if (today > endDate) {
+                return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
+            }
             try {
                 if (!valCre(req.user.id, project)) {
                     return res.send(JSON.stringify({ status: 401, message: "Only creator can make change to this project" }));
@@ -243,6 +249,22 @@ class UserController {
                     status: 500, message: error
                 }));
             }
+        });
+    }
+    createTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    alterTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    deleteTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    createTicketComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }
