@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const uploadFile = require('../middleware/uploadFile');
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
 const valCre = require('../middleware/validateCreator');
 const commentMod = require('../models/comment.model');
+const ticketMod = require('../models/ticket.model');
 class UserController {
     //Get projects which user attended
     getUserProjects(req, res) {
@@ -251,8 +251,78 @@ class UserController {
             }
         });
     }
+    getTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    getUserTickets(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = req.user.id;
+            ticketMod.find({
+                $or: [
+                    { createor: user },
+                    { asignee: user }
+                ]
+            }, (error, result) => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Bad request" }));
+                //if success
+                return res.status(200).send(JSON.stringify({
+                    status: 200, data: result
+                }));
+            });
+        });
+    }
+    getProjectTickets(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
     createTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const creator = req.user.id;
+            const project = req.body.project;
+            const summary = req.body.summary;
+            const description = req.body.description || "";
+            const severity = req.body.severity;
+            const asignee = req.body.asignee;
+            const version = req.body.version;
+            const deadline = req.body.deadline || 0;
+            if (!summary || !severity || !asignee || !version) {
+                return res.status(401).send({ status: 401, message: "Missing required infomation!" });
+            }
+            if (deadline != 0) {
+                const UTCDeadline = new Date(deadline);
+                const UTCCurrentTime = new Date();
+                if (UTCCurrentTime > UTCDeadline) {
+                    return res.status(401).send({ status: 401, messate: "Invalid deadline!" });
+                }
+            }
+            try {
+                const result = projectMembersMod.findOne({
+                    userId: user,
+                    projectId: project
+                });
+                if (!result) {
+                    return res.status(404).send({ status: 404, message: "User not found in this project" });
+                }
+                ticketMod.create({
+                    creator: creator,
+                    project: project,
+                    summary: summary,
+                    description: description,
+                    severity: severity,
+                    asignee: asignee,
+                    version: version,
+                    deadline: deadline
+                }, (err, result) => {
+                    if (err)
+                        return res.status(500).send({ status: 500, message: "bad query" });
+                    return res.status(200).send({ status: 200, message: "ticket created" });
+                });
+            }
+            catch (error) {
+                return res.status(500).send({ status: 500, message: error });
+            }
         });
     }
     alterTicket(req, res) {
@@ -265,6 +335,18 @@ class UserController {
     }
     createTicketComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    uploadTicketAttachment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { file } = req.files;
+                console.log(file);
+                console.log(req.body);
+            }
+            catch (error) {
+                return res.status(500).send({ status: 500, message: "Error while uploading the file" });
+            }
         });
     }
 }

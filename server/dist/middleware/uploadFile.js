@@ -1,9 +1,9 @@
 "use strict";
 const multer = require('multer');
+const path = require('path');
 const storage = multer.diskStorage({
-    destination: function (req, res, cb) {
-    },
-    filename: function (req, res, cb) {
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../../public'));
     }
 });
 const upload = multer({ storage: storage });

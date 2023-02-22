@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
 interface Ticket {
+    creator: String,
+    project: String,
     summary: String,
     description: String,
     severity: Number,
@@ -15,11 +17,13 @@ interface Ticket {
 interface TicketModel extends Ticket, mongoose.Document {}
 
 const ticketSchema = new mongoose.Schema<TicketModel>({
+    creator: {type: String, required: true},
+    project: {type: String, required: true},
     summary: {type: String, required: true},
     description: {type: String, default: ""},
     severity: {type: Number, required: true},
     asignee: {type: String, required: true},
-    status: {type: Number, required: true},
+    status: {type: Number, default: 0},
     version: {type: String, default: "0.0"},
     created: {type: Date, default: Date.now},
     updated: {type: Date, default: Date.now},

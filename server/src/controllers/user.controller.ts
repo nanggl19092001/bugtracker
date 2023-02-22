@@ -1,11 +1,11 @@
 import { Socket } from "socket.io"
 
-const uploadFile = require('../middleware/uploadFile')
 const projectMod = require('../models/project.model')
 const projectMembersMod = require('../models/projectmember.model')
 const accountMod = require('../models/account.model')
 const valCre = require('../middleware/validateCreator')
 const commentMod = require('../models/comment.model')
+const ticketMod = require('../models/ticket.model')
 
 interface UserControllerInterface {
     getUserProjects(req: any, res: any): Promise<void>
@@ -17,9 +17,12 @@ interface UserControllerInterface {
     alterProject(req: any, res: any): Promise<void>
     createProjectComment(req: any, res: any): Promise<void>
 
+    getTicket(req: any, res: any): Promise<void>
+    getUserTickets(req: any, res: any): Promise<void>
     createTicket(req: any, res: any): Promise<void>
     alterTicket(req: any, res: any): Promise<void>
     deleteTicket(req: any, res: any): Promise<void>
+    uploadTicketAttachment(req: any, res: any): Promise<void>
     createTicketComment(req: any, res: any): Promise<void>
 }
 
@@ -291,12 +294,90 @@ class UserController implements UserControllerInterface{
         }
     }
 
-    async createTicket(req: any, res: any){
+    async getTicket(req: any, res: any){
 
     }
 
-    async alterTicket(req: any, res: any){
+    async getUserTickets(req: any, res: any){
+        const user = req.user.id
 
+        ticketMod.find({
+            $or: [
+                {createor: user},
+                {asignee: user}
+            ]
+        }, (error: any, result: any) => {
+            if(error)
+                return res.status(500).send(JSON.stringify({status: 500, message: "Bad request"}))
+
+                //if success
+                return res.status(200).send(JSON.stringify({
+                    status: 200, data: result
+                }))
+        })
+    }
+
+    async getProjectTickets(req: any, res: any){
+        
+    }
+
+    async createTicket(req: any, res: any){
+
+        const creator = req.user.id;
+        
+        const project = req.body.project
+        const summary = req.body.summary
+        const description = req.body.description || ""
+        const severity = req.body.severity
+        const asignee = req.body.asignee
+        const version = req.body.version
+        const deadline = req.body.deadline || 0
+
+        if(!summary || !severity || !asignee || !version){
+            return res.status(401).send({status: 401, message: "Missing required infomation!"})
+        }
+
+        if(deadline != 0){
+            const UTCDeadline = new Date(deadline)
+            const UTCCurrentTime = new Date()
+            if(UTCCurrentTime > UTCDeadline){
+                return res.status(401).send({status: 401, messate: "Invalid deadline!"})
+            }
+        }
+
+        try {
+
+            const result = projectMembersMod.findOne({
+                userId: user,
+                projectId: project
+            })
+
+            if(!result){
+                return res.status(404).send({status: 404, message: "User not found in this project"})
+            }
+
+            ticketMod.create({
+                creator: creator,
+                project: project,
+                summary: summary,
+                description: description,
+                severity: severity,
+                asignee: asignee,
+                version: version,
+                deadline: deadline
+            },(err: any, result: any) => {
+                if(err) 
+                    return res.status(500).send({status: 500, message: "bad query"})
+                return res.status(200).send({status: 200, message: "ticket created"})
+            })
+
+        } catch (error) {
+            return res.status(500).send({status: 500, message: error})
+        }
+    }
+
+    async alterTicket(req: any, res: any){
+        
     }
 
     async deleteTicket(req: any, res: any){
@@ -307,6 +388,16 @@ class UserController implements UserControllerInterface{
 
     }
 
+    async uploadTicketAttachment(req: any, res: any){
+        try {
+            const { file } = req.files
+
+            console.log(file)
+            console.log(req.body)
+        } catch (error) {
+            return res.status(500).send({status: 500, message: "Error while uploading the file"})
+        }
+    }
 }
 
 module.exports = new UserController

@@ -25,7 +25,7 @@ function Dashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: name.current.value,
+          name: name.current.value.charAt(0).toUpperCase() + name.current.value.slice(1),
           description: description.current.value,
           deadline: time.current.value,
         }),
@@ -38,8 +38,8 @@ function Dashboard() {
       } else {
         setMessage(resJson.message);
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
   return (
@@ -47,7 +47,7 @@ function Dashboard() {
       {notify && <Notification message={notify} type="success" />}
       <h2 className="text-xl font-bold">DashBoard</h2>
       <div className="my-4 w-full h-fit min-h-[250px] bg-white rounded">
-        <h2 className="text-md px-4 py-2 text-text-color font-bold">Project</h2>
+        <h2 className="text-lg px-4 pt-2 text-text-color font-bold">Project</h2>
         <div className="flex justify-end">
           <button
             className="bg-blue-600 text-white opacity-80 text-[14px] rounded-md 
@@ -140,7 +140,7 @@ function Dashboard() {
             <div className="w-10 h-10 border-4 border-t-5 border-t-blue-500 border-white rounded-full animate-spin"></div>
           </div>
         ) : (
-          project && <Project project={project} />
+          project && <Project project={project}/>
         )}
         {error && <div className="text-center">{error}</div>}
       </div>

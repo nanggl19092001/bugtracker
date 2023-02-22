@@ -1,14 +1,16 @@
 import Sort from "../icon/Sort";
 import { Link } from "react-router-dom";
 import Empty from "./Empty";
-import { useState } from "react";
+import { useState, useContext, useRef } from "react";
+import { HomeContext } from "../../Context/HomeContext";
 
 function Project({ project }) {
+  const { token, SERVER_DOMAIN, reload, setReload } = useContext(HomeContext);
   const [sort, setSort] = useState("");
   const handleSort = (value) => {
     setSort(value);
   };
-  if (sort === "asc") {
+  if (sort === "desc") {
     project.sort((a, b) => {
       if (a.name < b.name) {
         return 1;
@@ -19,7 +21,7 @@ function Project({ project }) {
       return 0;
     });
   }
-  if (sort === "desc") {
+  if (sort === "asc") {
     project.sort((a, b) => {
       if (a.name < b.name) {
         return -1;
@@ -53,11 +55,73 @@ function Project({ project }) {
     setShowModal(!showModal);
     setIsOpen(false);
   };
-  const handleDelete = (e) => {
+  const handleDelete = async (e) => {
     e.preventDefault();
-    console.log("delete");
+    try {
+      let res = await fetch(`${SERVER_DOMAIN}/user/project?token=${token}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: idIsOpen,
+        }),
+      });
+      let resJson = await res.json();
+      if (resJson.status === 200) {
+        setIsOpen(false);
+        setReload(!reload);
+      } else {
+        console.log(resJson.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
     setShowModal(false);
   };
+  //handle edit project
+  const [message, setMessage] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const name = useRef("");
+  const description = useRef("");
+  const time = useRef("");
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    console.log(itemEdit._id);
+    try {
+      let res = await fetch(`${SERVER_DOMAIN}/user/project?token=${token}`, {
+        method:"PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: itemEdit._id,
+          name: name.current.value.charAt(0).toUpperCase() + name.current.value.slice(1),
+          description: description.current.value,
+          end: time.current.value,
+        }),
+      });
+      let resJson = await res.json();
+      if (resJson.status === 200) {
+        setReload(!reload)
+        setShowEditModal(false);
+      } else {
+        setMessage(resJson.message);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  let itemEdit = project.find((item) => item._id === idIsOpen);
+  const toggleModalEdit = () => {
+    setShowEditModal(true);
+    setIsOpen(false);
+  }
+  const convertTime = (time) => {
+    const date = new Date(time);
+    const utcDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return utcDate.toISOString().slice(0, 16);
+  }
   return (
     <div>
       {project && (
@@ -66,6 +130,90 @@ function Project({ project }) {
             <Empty />
           ) : (
             <>
+              {showEditModal && (
+                <div className="fixed z-20 bottom-0 inset-x-0 px-4 pb-4 sm:inset-0 sm:flex sm:items-center sm:justify-center">
+                  <div
+                    className="fixed inset-0 transition-opacity"
+                    onClick={() => {setShowEditModal(false)
+                    setMessage("")}}
+                  >
+                    <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                  </div>
+                  <div className="bg-white rounded-lg px-4 pt-5 pb-4 overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                    <form>
+                      <h2 className="text-xl font-bold pb-4 text-center">
+                        Edit Project
+                      </h2>
+                      <div className="mb-4">
+                        <label
+                          className="block text-sm font-medium mb-2 after:content-['*'] after:text-red-500"
+                          htmlFor="name"
+                        >
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          defaultValue={itemEdit.name}
+                          ref={name}
+                          className="w-full p-2 border border-gray-400 rounded focus:outline-none focus:border-blue-500 focus:border-2"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label
+                          className="block text-sm font-medium mb-2"
+                          htmlFor="description"
+                        >
+                          Description
+                        </label>
+                        <textarea
+                          type="text"
+                          id="description"
+                          defaultValue={itemEdit.description}
+                          ref={description}
+                          rows="5"
+                          className="w-full p-2 border border-gray-400 rounded focus:outline-none focus:border-blue-500 focus:border-2"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label
+                          className="block text-sm font-medium mb-2 after:content-['*'] after:text-red-500"
+                          htmlFor="time"
+                        >
+                          DeadLine
+                        </label>
+                        <input
+                          type="datetime-local"
+                          id="time"
+                          defaultValue={convertTime(itemEdit.end)}
+                          ref={time}
+                          className="w-full p-2 border border-gray-400 rounded focus:outline-none focus:border-blue-500 focus:border-2"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        {message ? (
+                          <div
+                            className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base red-yellow-700"
+                            role="alert"
+                          >
+                            {message}
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                      <div className="flex items-center w-full justify-end mt-4">
+                        <button
+                          onClick={handleEdit}
+                          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
               <table className="table-fixed w-full min-h-[250px] mx-4 py-2 font-light border-b border-gray-200">
                 <thead>
                   <tr>
@@ -85,10 +233,10 @@ function Project({ project }) {
                         className="border-t border-gray-200 h-11"
                         key={item._id}
                       >
-                        <td className="whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="whitespace-nowrap overflow-hidden text-ellipsis font-normal">
                           <Link to={`/project/${item._id}`}>{item.name}</Link>
                         </td>
-                        <td className="whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="whitespace-nowrap overflow-hidden text-ellipsis ">
                           {item.description}
                         </td>
                         <td className="whitespace-nowrap overflow-hidden text-ellipsis">
@@ -122,7 +270,7 @@ function Project({ project }) {
                             >
                               <button
                                 className="flex w-full hover:bg-slate-200 p-1 text-md text-blue-500 font-medium"
-                                onClick={toggleModal}
+                                onClick={toggleModalEdit}
                               >
                                 <svg
                                   className="w-5 h-5"
@@ -162,7 +310,6 @@ function Project({ project }) {
                                 </svg>
                                 Delete
                               </button>
-                              
                             </div>
                           )}
                         </td>
