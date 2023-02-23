@@ -3,6 +3,7 @@ const Express = require('express');
 const Router = Express.Router();
 const { ValidateJWT } = require('../middleware/jwt');
 const UserControllers = require('../controllers/user.controller');
+const uploadFile = require('../middleware/uploadFile');
 Router.use('/', (req, res, next) => {
     const validateJwtResult = ValidateJWT(req.query.token);
     if (validateJwtResult) {
@@ -21,5 +22,11 @@ Router.delete('/project', UserControllers.deleteProject);
 Router.post('/project/member', UserControllers.addProjectMember);
 Router.delete('/project/member', UserControllers.deleteProjectMember);
 Router.post('/project/comment', UserControllers.createProjectComment);
+Router.get('/ticket', UserControllers.getTicket);
+Router.get('/ticket/personel', UserControllers.getUserTickets);
+Router.post('/ticket/attachment', uploadFile.single('file'), UserControllers.uploadTicketAttachment);
+Router.post('/ticket', UserControllers.createTicket);
+Router.put('/ticket', UserControllers.alterTicket);
+Router.delete('/ticket', UserControllers.deleteTicket);
 Router.get('/search', UserControllers.searchUser);
 module.exports = Router;

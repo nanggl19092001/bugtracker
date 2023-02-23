@@ -13,7 +13,7 @@ interface Comment {
 
 interface CommentModel extends Comment, mongoose.Document { }
 
-const commentSchema = new mongoose.Schema({
+const commentSchema = new mongoose.Schema<CommentModel>({
     sender: mongoose.Types.ObjectId,
     date: {type: Date, default: Date.now},
     content: String,

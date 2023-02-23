@@ -9,7 +9,7 @@ interface Project {
 
 interface ProjectModel extends Project, mongoose.Document {}
 
-const projectSchema = new mongoose.Schema({
+const projectSchema = new mongoose.Schema<ProjectModel>({
     name: {type: String, required: true, unique: true},
     description: {type: String},
     end: {type: Date, required: true},

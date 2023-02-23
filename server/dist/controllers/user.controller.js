@@ -9,11 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require('fs');
+const path = require('path');
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
-const commentMod = require('../models/comment.model');
 const valCre = require('../middleware/validateCreator');
+const commentMod = require('../models/comment.model');
+const ticketMod = require('../models/ticket.model');
 class UserController {
     //Get projects which user attended
     getUserProjects(req, res) {
@@ -112,7 +115,7 @@ class UserController {
                 ]
             }, {
                 password: 0
-            }, (result, error) => {
+            }, (error, result) => {
                 if (error) {
                     return res.send(JSON.stringify({ status: 500, message: error }));
                 }
@@ -162,10 +165,15 @@ class UserController {
                     if (error) {
                         return res.send(JSON.stringify({ status: 500, message: error }));
                     }
-                    return res.send(JSON.stringify({ status: 200, message: result }));
-                }).catch((err) => {
-                    if (err) {
-                        return res.send(JSON.stringify({ status: 500, message: "Bad request" }));
+                    else {
+                        projectMembersMod.deleteMany({
+                            projectId: project
+                        }, (error, result) => {
+                            if (error) {
+                                return res.send(JSON.stringify({ status: 500, message: error }));
+                            }
+                            return res.send(JSON.stringify({ status: 200, message: result }));
+                        });
                     }
                 });
             }
@@ -182,6 +190,11 @@ class UserController {
             const end = req.body.end;
             if (!project || !end || !name) {
                 return res.send(JSON.stringify({ status: 400, message: "Missing important infomation" }));
+            }
+            let today = new Date();
+            let endDate = new Date(end);
+            if (today > endDate) {
+                return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
             }
             try {
                 if (!valCre(req.user.id, project)) {
@@ -238,6 +251,147 @@ class UserController {
                     status: 500, message: error
                 }));
             }
+        });
+    }
+    getTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    getUserTickets(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = req.user.id;
+            ticketMod.find({
+                $or: [
+                    { createor: user },
+                    { asignee: user }
+                ]
+            }, (error, result) => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Bad request" }));
+                //if success
+                return res.status(200).send(JSON.stringify({
+                    status: 200, data: result
+                }));
+            });
+        });
+    }
+    getProjectTickets(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const project = req.query.id;
+            ticketMod.find({
+                project: project
+            }, (error, result) => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
+        });
+    }
+    createTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const creator = req.user.id;
+            const project = req.body.project;
+            const summary = req.body.summary;
+            const description = req.body.description || "";
+            const severity = req.body.severity;
+            const asignee = req.body.asignee;
+            const version = req.body.version;
+            const deadline = req.body.deadline || 0;
+            if (!summary || !severity || !asignee || !version) {
+                return res.status(401).send({ status: 401, message: "Missing required infomation!" });
+            }
+            if (deadline != 0) {
+                const UTCDeadline = new Date(deadline);
+                const UTCCurrentTime = new Date();
+                if (UTCCurrentTime > UTCDeadline) {
+                    return res.status(401).send({ status: 401, messate: "Invalid deadline!" });
+                }
+            }
+            try {
+                const result = projectMembersMod.findOne({
+                    userId: user,
+                    projectId: project
+                });
+                if (!result) {
+                    return res.status(404).send({ status: 404, message: "User not found in this project" });
+                }
+                ticketMod.create({
+                    creator: creator,
+                    project: project,
+                    summary: summary,
+                    description: description,
+                    severity: severity,
+                    asignee: asignee,
+                    version: version,
+                    deadline: deadline
+                }, (err, result) => {
+                    if (err)
+                        return res.status(500).send({ status: 500, message: "bad query" });
+                    return res.status(200).send({ status: 200, message: "ticket created" });
+                });
+            }
+            catch (error) {
+                return res.status(500).send({ status: 500, message: error });
+            }
+        });
+    }
+    alterTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.body.id;
+            const summary = req.body.summary;
+            const description = req.body.description || "";
+            const severity = req.body.severity;
+            const version = req.body.version;
+            const deadline = req.body.deadline || 0;
+            try {
+                const result = yield ticketMod.findOne({
+                    _id: ticketId
+                });
+                if (!result) {
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "Ticket not found !" }));
+                }
+                ticketMod.updateOne({
+                    _id: ticketId
+                }, {
+                    summary: summary,
+                    description: description,
+                    severity: severity,
+                    version: version,
+                    deadline: deadline
+                }, (error, result) => {
+                    if (error)
+                        return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+                    return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+                });
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+            }
+        });
+    }
+    deleteTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    createTicketComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    uploadTicketAttachment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + req.body.id))) {
+                    fs.renameSync(path.join(__dirname, '../../public/files/temp'), path.join(__dirname, '../../public/files/' + req.body.id));
+                }
+                else {
+                    fs.renameSync(req.file.path, path.join(__dirname, '../../public/files/' + req.body.id + '/' + req.file.originalname));
+                    // fs.unlinkSync(req.file.path)
+                }
+            }
+            catch (error) {
+                return res.status(500).send({ status: 500, message: "Server upload error, maybe your file name already existed in this ticket" });
+            }
+            return res.status(200).send({ status: 200, message: "File uploaded successfully" });
         });
     }
 }
