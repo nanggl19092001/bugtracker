@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Sort() {
+function Sort(props) {
   const [sort, setSort] = useState("desc");
   const desc = () => {
     return (
@@ -42,6 +42,7 @@ function Sort() {
   };
   function handleSort() {
     sort === "desc" ? setSort("asc") : setSort("desc");
+    props.handleSort(sort);
   }
   return <button onClick={handleSort}>{sort === "desc" ? desc() : asc()}</button>;
 }

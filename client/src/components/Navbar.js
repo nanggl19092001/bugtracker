@@ -17,7 +17,7 @@ function Navbar() {
 
   return (
     <div
-      className="col-span-1 h-full bg-bg-nav
+      className="sticky top-0 col-span-1 h-full bg-bg-nav
     drop-shadow-xl"
     >
       <ul className="relative">
