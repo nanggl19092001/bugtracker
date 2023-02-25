@@ -26,6 +26,8 @@ interface UserControllerInterface {
     deleteTicket(req: any, res: any): Promise<void>
     uploadTicketAttachment(req: any, res: any): Promise<void>
     createTicketComment(req: any, res: any): Promise<void>
+
+    getComment(req: any, res: any): Promise<void>
 }
 
 class UserController implements UserControllerInterface{
@@ -450,6 +452,22 @@ class UserController implements UserControllerInterface{
                 return res.status(500).send({status: 500, message: "Server upload error, maybe your file name already existed in this ticket"})
             }
             return res.status(200).send({status: 200, message: "File uploaded successfully"})
+    }
+
+    async getComment(req: any, res: any){
+        const id = req.query.id;
+
+        commentMod.find({
+            receiveId: id
+        }, (err: any, result: Array<Object>) => {
+            if(err)
+                return res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
+            
+            if(result.length == 0)
+                return res.status(404).send(JSON.stringify({status: 404, message: "id not exist or no comment had been created"}))
+            
+            return res.status(200).send(JSON.stringify({status: 200, data: result}))
+        })
     }
 }
 
