@@ -31,9 +31,11 @@ Router.delete('/project/member', UserControllers.deleteProjectMember)
 
 Router.post('/project/comment', UserControllers.createProjectComment)
 
-Router.get('/ticket', UserControllers.getTicket)
+Router.get('/ticket', UserControllers.getProjectTickets)
 
 Router.get('/ticket/personel', UserControllers.getUserTickets)
+
+Router.get('/ticket/attachment', UserControllers.getTicketAttachment)
 
 Router.post('/ticket/attachment', uploadFile.single('file'),UserControllers.uploadTicketAttachment)
 
@@ -43,6 +45,10 @@ Router.put('/ticket', UserControllers.alterTicket)
 
 Router.delete('/ticket', UserControllers.deleteTicket)
 
+Router.get('/comment', UserControllers.getComment)
+
 Router.get('/search', UserControllers.searchUser)
+
+Router.get('/info', UserControllers.getUserInfo)
 
 module.exports = Router

@@ -4,13 +4,14 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const app = express();
-const http = require('http');
 const cors = require('cors');
 const { engine } = require('express-handlebars');
 const { Server } = require('socket.io');
 const DBConnection = require('../database');
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+    cors: '*'
+});
 const classUser = require('./middleware/user');
 const routes = require('./routes/index.route');
 const PORT = 3000 || process.env.PORT;
@@ -29,6 +30,6 @@ io.on("connection", (socket) => {
     });
 });
 routes(app);
-server.listen(PORT, () => {
+http.listen(PORT, () => {
     console.warn("SERVER UP PORT " + PORT);
 });

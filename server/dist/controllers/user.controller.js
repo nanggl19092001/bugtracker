@@ -9,6 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const fs = require('fs');
+const path = require('path');
 const projectMod = require('../models/project.model');
 const projectMembersMod = require('../models/projectmember.model');
 const accountMod = require('../models/account.model');
@@ -275,6 +278,14 @@ class UserController {
     }
     getProjectTickets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const project = req.query.id;
+            ticketMod.find({
+                project: project
+            }, (error, result) => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
         });
     }
     createTicket(req, res) {
@@ -290,6 +301,9 @@ class UserController {
             if (!summary || !severity || !asignee || !version) {
                 return res.status(401).send({ status: 401, message: "Missing required infomation!" });
             }
+            // if(asignee == creator){
+            //     return res.status(403).send({status: 403, message: "User cannot asign ticket to it "})
+            // }
             if (deadline != 0) {
                 const UTCDeadline = new Date(deadline);
                 const UTCCurrentTime = new Date();
@@ -299,7 +313,7 @@ class UserController {
             }
             try {
                 const result = projectMembersMod.findOne({
-                    userId: user,
+                    userId: asignee,
                     projectId: project
                 });
                 if (!result) {
@@ -321,12 +335,42 @@ class UserController {
                 });
             }
             catch (error) {
-                return res.status(500).send({ status: 500, message: error });
+                return res.status(500).send({ status: 500, message: "Server error" });
             }
         });
     }
     alterTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.body.id;
+            const summary = req.body.summary;
+            const description = req.body.description || "";
+            const severity = req.body.severity;
+            const version = req.body.version;
+            const deadline = req.body.deadline || 0;
+            try {
+                const result = yield ticketMod.findOne({
+                    _id: ticketId
+                });
+                if (!result) {
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "Ticket not found !" }));
+                }
+                ticketMod.updateOne({
+                    _id: ticketId
+                }, {
+                    summary: summary,
+                    description: description,
+                    severity: severity,
+                    version: version,
+                    deadline: deadline
+                }, (error, result) => {
+                    if (error)
+                        return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+                    return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+                });
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+            }
         });
     }
     deleteTicket(req, res) {
@@ -340,13 +384,60 @@ class UserController {
     uploadTicketAttachment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { file } = req.files;
-                console.log(file);
-                console.log(req.body);
+                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + req.body.id))) {
+                    fs.renameSync(path.join(__dirname, '../../public/files/temp'), path.join(__dirname, '../../public/files/' + req.body.id));
+                }
+                else {
+                    fs.renameSync(req.file.path, path.join(__dirname, '../../public/files/' + req.body.id + '/' + req.file.originalname));
+                    // fs.unlinkSync(req.file.path)
+                }
             }
             catch (error) {
-                return res.status(500).send({ status: 500, message: "Error while uploading the file" });
+                return res.status(500).send({ status: 500, message: "Server upload error, maybe your file name already existed in this ticket" });
             }
+            return res.status(200).send({ status: 200, message: "File uploaded successfully" });
+        });
+    }
+    getTicketAttachment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.query.id;
+            try {
+                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + ticketId)))
+                    return res.send(JSON.stringify({ status: 200, filesName: [] }));
+                const files = (0, fs_1.readdirSync)(path.join(__dirname, '../../public/files/' + ticketId));
+                return res.status(200).send(JSON.stringify({ status: 200, filesName: files }));
+            }
+            catch (error) {
+                res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+            }
+        });
+    }
+    getComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.query.id;
+            commentMod.find({
+                receiveId: id
+            }, (err, result) => {
+                if (err)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                if (result.length == 0)
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
+        });
+    }
+    getUserInfo(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const requestUserId = req.query.id;
+            accountMod.findOne({
+                _id: requestUserId
+            }, { password: 0 }, (err, result) => {
+                if (err)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                if (!result)
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "Invalid user" }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
         });
     }
 }

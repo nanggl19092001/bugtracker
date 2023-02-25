@@ -1,4 +1,7 @@
+import { readdirSync } from "fs"
 import { Socket } from "socket.io"
+const fs = require('fs')
+const path = require('path')
 
 const projectMod = require('../models/project.model')
 const projectMembersMod = require('../models/projectmember.model')
@@ -19,11 +22,15 @@ interface UserControllerInterface {
 
     getTicket(req: any, res: any): Promise<void>
     getUserTickets(req: any, res: any): Promise<void>
+    getProjectTickets(req: any, res: any): Promise<void>
     createTicket(req: any, res: any): Promise<void>
     alterTicket(req: any, res: any): Promise<void>
     deleteTicket(req: any, res: any): Promise<void>
     uploadTicketAttachment(req: any, res: any): Promise<void>
     createTicketComment(req: any, res: any): Promise<void>
+
+    getComment(req: any, res: any): Promise<void>
+    getUserInfo(req: any, res: any): Promise<void>
 }
 
 class UserController implements UserControllerInterface{
@@ -318,7 +325,16 @@ class UserController implements UserControllerInterface{
     }
 
     async getProjectTickets(req: any, res: any){
-        
+        const project = req.query.id;
+
+        ticketMod.find({
+            project: project
+        }, (error: any, result: any) => {
+            if(error)
+                return res.status(500).send(JSON.stringify({status: 500, message: error}))
+            
+            return res.status(200).send(JSON.stringify({status: 200, data: result}))
+        })
     }
 
     async createTicket(req: any, res: any){
@@ -337,6 +353,10 @@ class UserController implements UserControllerInterface{
             return res.status(401).send({status: 401, message: "Missing required infomation!"})
         }
 
+        // if(asignee == creator){
+        //     return res.status(403).send({status: 403, message: "User cannot asign ticket to it "})
+        // }
+
         if(deadline != 0){
             const UTCDeadline = new Date(deadline)
             const UTCCurrentTime = new Date()
@@ -348,7 +368,7 @@ class UserController implements UserControllerInterface{
         try {
 
             const result = projectMembersMod.findOne({
-                userId: user,
+                userId: asignee,
                 projectId: project
             })
 
@@ -372,12 +392,50 @@ class UserController implements UserControllerInterface{
             })
 
         } catch (error) {
-            return res.status(500).send({status: 500, message: error})
+            return res.status(500).send({status: 500, message: "Server error"})
         }
     }
 
     async alterTicket(req: any, res: any){
-        
+
+        const ticketId = req.body.id;
+
+        const summary = req.body.summary
+        const description = req.body.description || ""
+        const severity = req.body.severity
+        const version = req.body.version
+        const deadline = req.body.deadline || 0
+
+        try {
+            const result = await ticketMod.findOne({
+                _id: ticketId
+            })
+
+            if(!result){
+                return res.status(404).send(JSON.stringify({status: 404, message: "Ticket not found !"}))
+            }
+
+            ticketMod.updateOne(
+                {
+                    _id: ticketId
+                },
+                {
+                    summary: summary,
+                    description: description,
+                    severity: severity,
+                    version: version,
+                    deadline: deadline
+                },
+                (error: any, result: any) => {
+                    if(error)
+                        return res.status(500).send(JSON.stringify({status: 500, message: error}))
+
+                    return res.status(200).send(JSON.stringify({status: 200, data: result}))
+                }
+            )
+        } catch (error) {
+            return res.status(500).send(JSON.stringify({status: 500, message: error}))
+        }
     }
 
     async deleteTicket(req: any, res: any){
@@ -389,14 +447,64 @@ class UserController implements UserControllerInterface{
     }
 
     async uploadTicketAttachment(req: any, res: any){
-        try {
-            const { file } = req.files
+            try {
+                if(!fs.existsSync(path.join(__dirname, '../../public/files/' + req.body.id))){
+                    fs.renameSync(path.join(__dirname, '../../public/files/temp'), path.join(__dirname, '../../public/files/' + req.body.id))
+                }
+                else{
+                    fs.renameSync(req.file.path, path.join(__dirname, '../../public/files/' + req.body.id + '/' + req.file.originalname))
+                    // fs.unlinkSync(req.file.path)
+                }
+            } catch (error) {
+                return res.status(500).send({status: 500, message: "Server upload error, maybe your file name already existed in this ticket"})
+            }
+            return res.status(200).send({status: 200, message: "File uploaded successfully"})
+    }
 
-            console.log(file)
-            console.log(req.body)
+    async getTicketAttachment(req: any, res: any){
+        const ticketId = req.query.id
+
+        try {
+            if(!fs.existsSync(path.join(__dirname, '../../public/files/' + ticketId)))
+                return res.send(JSON.stringify({status: 200, filesName: []}))
+            
+            const files = readdirSync(path.join(__dirname, '../../public/files/' + ticketId))
+
+            return res.status(200).send(JSON.stringify({status:200, filesName: files}))
         } catch (error) {
-            return res.status(500).send({status: 500, message: "Error while uploading the file"})
+            res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
         }
+    }
+
+    async getComment(req: any, res: any){
+        const id = req.query.id;
+
+        commentMod.find({
+            receiveId: id
+        }, (err: any, result: Array<Object>) => {
+            if(err)
+                return res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
+            
+            if(result.length == 0)
+                return res.status(404).send(JSON.stringify({status: 404, message: "id not exist or no comment had been created"}))
+            
+            return res.status(200).send(JSON.stringify({status: 200, data: result}))
+        })
+    }
+
+    async getUserInfo(req: any, res: any){
+        const requestUserId = req.query.id
+
+        accountMod.findOne({
+            _id: requestUserId
+        }, {password: 0},(err: any, result: any) => {
+            if(err)
+                return res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
+            if(!result)
+                return res.status(404).send(JSON.stringify({status: 404, message: "Invalid user"}))
+
+            return res.status(200).send(JSON.stringify({status: 200, data: result}))
+        })
     }
 }
 
