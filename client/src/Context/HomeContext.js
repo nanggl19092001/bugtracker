@@ -1,6 +1,7 @@
 import { createContext} from "react";
 import { useState, useContext } from "react";
 import jwt_decode from "jwt-decode";
+import io from 'socket.io-client';
 import { AppContext } from "../Context/AppContext";
 import {SERVER_DOMAIN} from "../utils/Constaint"
 import GetProject from "../FetchData/GetProject";
@@ -18,8 +19,10 @@ export const HomeProvider = ({ children }) => {
     error,
     isLoading,
   } = GetProject(`${SERVER_DOMAIN}/user/project?token=${token}`, reload);
+  const socket = io('http://localhost:5000');
   return (
-    <HomeContext.Provider value={{ token,SERVER_DOMAIN, page, setPage, user, reload, setReload, project, error, isLoading}}>
+    <HomeContext.Provider value={{ token,SERVER_DOMAIN, page, setPage, user, reload, setReload,
+     project, error, isLoading, socket}}>
       {children}
     </HomeContext.Provider>
   );

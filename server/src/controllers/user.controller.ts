@@ -50,6 +50,17 @@ class UserController implements UserControllerInterface{
             for(let attendProject of attendProjects){
                 projects.push(await projectMod.findOne({_id: attendProject.projectId}))
             }
+
+            for(let i = 0; i < projects.length; i++){
+                const creator = await accountMod.findOne(
+                    {
+                        _id: projects[i].creator
+                    },{password: 0}
+                )
+                
+                
+            }
+
             return res.send(JSON.stringify({status: 200, data: projects}))
             
         } catch (error) {

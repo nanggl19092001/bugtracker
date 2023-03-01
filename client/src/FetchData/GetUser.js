@@ -1,9 +1,8 @@
 import { useState, useEffect} from "react";
 
 
-const GetProject = (url, reload) => {
+const GetUser = (url) => {
   const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -18,20 +17,18 @@ const GetProject = (url, reload) => {
       })
       .then((data) => {
         setData(data.data);
-        setIsLoading(false);
         setError(null);
       })
       .catch((err) => {
         if (err.name === "AbortError") {
         } else {
           setError(err.message);
-          setIsLoading(false);
         }
       });
     return () => abortCont.abort();
-  }, [url, reload]);
+  }, [url]);
 
-  return { data, isLoading, error };
+  return { data, error };
 };
 
-export default GetProject;
+export default GetUser;
