@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
 const fs = require('fs');
 const path = require('path');
 const projectMod = require('../models/project.model');
@@ -29,7 +30,14 @@ class UserController {
                 }).skip(offset).limit(limit);
                 const projects = [];
                 for (let attendProject of attendProjects) {
-                    projects.push(yield projectMod.findOne({ _id: attendProject.projectId }));
+                    projects.push(yield projectMod.findOne({
+                        _id: attendProject.projectId,
+                    }));
+                }
+                for (let i = 0; i < projects.length; i++) {
+                    const creator = yield accountMod.findOne({
+                        _id: projects[i].creator
+                    }, { password: 0 });
                 }
                 return res.send(JSON.stringify({ status: 200, data: projects }));
             }
@@ -227,7 +235,7 @@ class UserController {
             const content = req.body.content;
             const type = req.body.type;
             const receiveId = req.body.receiveId;
-            if (!sender || !content || !type || !receiveId) {
+            if (!sender || !content || !receiveId) {
                 return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
             }
             try {
@@ -255,6 +263,19 @@ class UserController {
     }
     getTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.query.id;
+            if (!ticketId) {
+                return res.status(401).send(JSON.stringify({ status: 401, message: "Missing ticket id" }));
+            }
+            ticketMod.findOne({
+                _id: ticketId
+            }, (result, error) => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                if (!result)
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "Your ticket either deleted or not existed" }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
         });
     }
     getUserTickets(req, res) {
@@ -300,6 +321,9 @@ class UserController {
             if (!summary || !severity || !asignee || !version) {
                 return res.status(401).send({ status: 401, message: "Missing required infomation!" });
             }
+            // if(asignee == creator){
+            //     return res.status(403).send({status: 403, message: "User cannot asign ticket to it "})
+            // }
             if (deadline != 0) {
                 const UTCDeadline = new Date(deadline);
                 const UTCCurrentTime = new Date();
@@ -309,7 +333,7 @@ class UserController {
             }
             try {
                 const result = projectMembersMod.findOne({
-                    userId: user,
+                    userId: asignee,
                     projectId: project
                 });
                 if (!result) {
@@ -331,7 +355,7 @@ class UserController {
                 });
             }
             catch (error) {
-                return res.status(500).send({ status: 500, message: error });
+                return res.status(500).send({ status: 500, message: "Server error" });
             }
         });
     }
@@ -371,6 +395,7 @@ class UserController {
     }
     deleteTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.body.ticketId;
         });
     }
     createTicketComment(req, res) {
@@ -392,6 +417,48 @@ class UserController {
                 return res.status(500).send({ status: 500, message: "Server upload error, maybe your file name already existed in this ticket" });
             }
             return res.status(200).send({ status: 200, message: "File uploaded successfully" });
+        });
+    }
+    getTicketAttachment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ticketId = req.query.id;
+            try {
+                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + ticketId)))
+                    return res.send(JSON.stringify({ status: 200, filesName: [] }));
+                const files = (0, fs_1.readdirSync)(path.join(__dirname, '../../public/files/' + ticketId));
+                return res.status(200).send(JSON.stringify({ status: 200, filesName: files }));
+            }
+            catch (error) {
+                res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+            }
+        });
+    }
+    getComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.query.id;
+            commentMod.find({
+                receiveId: id
+            }, (err, result) => {
+                if (err)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                if (result.length == 0)
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
+        });
+    }
+    getUserInfo(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const requestUserId = req.query.id;
+            accountMod.findOne({
+                _id: requestUserId
+            }, { password: 0 }, (err, result) => {
+                if (err)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                if (!result)
+                    return res.status(404).send(JSON.stringify({ status: 404, message: "Invalid user" }));
+                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
         });
     }
 }

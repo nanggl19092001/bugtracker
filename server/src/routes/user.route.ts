@@ -3,7 +3,9 @@ const Router = Express.Router()
 const {ValidateJWT} = require('../middleware/jwt')
 const UserControllers = require('../controllers/user.controller')
 
-const uploadFile = require('../middleware/uploadFile')
+const RP = require('./project.route')
+const RT = require('./ticket.route')
+
 
 Router.use('/', (req: any,res: any,next: any) => {
     const validateJwtResult = ValidateJWT(req.query.token)
@@ -17,32 +19,14 @@ Router.use('/', (req: any,res: any,next: any) => {
     }
 })
 
-Router.get('/project', UserControllers.getUserProjects)
+Router.use('/project',RP)
 
-Router.post('/project', UserControllers.createProject)
+Router.use('/ticket', RT)
 
-Router.put('/project', UserControllers.alterProject)
-
-Router.delete('/project', UserControllers.deleteProject)
-
-Router.post('/project/member', UserControllers.addProjectMember)
-
-Router.delete('/project/member', UserControllers.deleteProjectMember)
-
-Router.post('/project/comment', UserControllers.createProjectComment)
-
-Router.get('/ticket', UserControllers.getTicket)
-
-Router.get('/ticket/personel', UserControllers.getUserTickets)
-
-Router.post('/ticket/attachment', uploadFile.single('file'),UserControllers.uploadTicketAttachment)
-
-Router.post('/ticket', UserControllers.createTicket)
-
-Router.put('/ticket', UserControllers.alterTicket)
-
-Router.delete('/ticket', UserControllers.deleteTicket)
+Router.get('/comment', UserControllers.getComment)
 
 Router.get('/search', UserControllers.searchUser)
+
+Router.get('/info', UserControllers.getUserInfo)
 
 module.exports = Router
