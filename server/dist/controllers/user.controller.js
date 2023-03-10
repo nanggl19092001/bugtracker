@@ -39,6 +39,11 @@ class UserController {
                         _id: projects[i].creator
                     }, { password: 0 });
                 }
+                for (let i = 0; i < projects.length; i++) {
+                    const creator = yield accountMod.findOne({
+                        _id: projects[i].creator
+                    }, { password: 0 });
+                }
                 return res.send(JSON.stringify({ status: 200, data: projects }));
             }
             catch (error) {

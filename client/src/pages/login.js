@@ -4,6 +4,10 @@ import Notification from "../components/notify/Notification";
 import { AppContext } from "../Context/AppContext";
 import { SERVER_DOMAIN } from "../utils/Constaint";
 import { GoogleLogin } from "@react-oauth/google";
+<<<<<<< HEAD
+=======
+import jwt_decode from "jwt-decode";
+>>>>>>> e9f29248fbed21373ae0dfc539bdd05008d8008c
 
 function Login({ setIsLogin }) {
   const { notify, setNotify } = useContext(AppContext);
@@ -47,6 +51,7 @@ function Login({ setIsLogin }) {
       console.log(error);
     }
   };
+<<<<<<< HEAD
   const responseMessage = async (response) => {
     try {
       let res = await fetch(`${SERVER_DOMAIN}/auth/signin?token=${response.credential}&id=${response.clientId}`);
@@ -62,6 +67,12 @@ function Login({ setIsLogin }) {
     } catch (error) {
       console.log(error);
     }
+=======
+  const responseMessage = (response) => {
+    console.log(response);
+    const user = jwt_decode(response.credential);
+    console.log(user);
+>>>>>>> e9f29248fbed21373ae0dfc539bdd05008d8008c
   };
   const errorMessage = (error) => {
     setMessage(error);
