@@ -5,9 +5,13 @@ const uploadFile = require('../middleware/uploadFile')
 
 RouterTicket.get('/personel', UserControllerTicket.getUserTickets)
 
+RouterTicket.get('/project', UserControllerTicket.getProjectTickets)
+
 RouterTicket.get('/attachment', UserControllerTicket.getTicketAttachment)
 
-RouterTicket.post('/attachment', uploadFile.single('file'),UserControllerTicket.uploadTicketAttachment)
+RouterTicket.post('/attachment', uploadFile.single('file'), UserControllerTicket.uploadTicketAttachment)
+
+RouterTicket.post('/comment', UserControllerTicket.createTicketComment)
 
 //get single ticket infomation
 RouterTicket.get('/', UserControllerTicket.getTicket)

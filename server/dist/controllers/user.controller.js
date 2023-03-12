@@ -145,12 +145,12 @@ class UserController {
                 ]
             }, {
                 password: 0
-            }, (error, result) => {
+            }, (error, result) => __awaiter(this, void 0, void 0, function* () {
                 if (error) {
                     return res.send(JSON.stringify({ status: 500, message: error }));
                 }
                 return res.send(JSON.stringify({ status: 200, data: result }));
-            });
+            }));
         });
     }
     deleteProjectMember(req, res) {
@@ -255,7 +255,7 @@ class UserController {
             const io = req.app.get('socketio');
             const sender = req.user.id;
             const content = req.body.content;
-            const type = req.body.type;
+            const type = req.body.type || 0;
             const receiveId = req.body.receiveId;
             if (!sender || !content || !receiveId) {
                 return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
@@ -383,18 +383,23 @@ class UserController {
     }
     alterTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const user = req.user.id;
             const ticketId = req.body.id;
             const summary = req.body.summary;
             const description = req.body.description || "";
             const severity = req.body.severity;
             const version = req.body.version;
             const deadline = req.body.deadline || 0;
+            const status = req.body.status;
             try {
                 const result = yield ticketMod.findOne({
                     _id: ticketId
                 });
                 if (!result) {
                     return res.status(404).send(JSON.stringify({ status: 404, message: "Ticket not found !" }));
+                }
+                if (result.creator != user) {
+                    return res.status(403).send(JSON.stringify({ status: 403, message: "Only ticket creator can modify this ticket !" }));
                 }
                 ticketMod.updateOne({
                     _id: ticketId
@@ -403,7 +408,8 @@ class UserController {
                     description: description,
                     severity: severity,
                     version: version,
-                    deadline: deadline
+                    deadline: deadline,
+                    status: status
                 }, (error, result) => {
                     if (error)
                         return res.status(500).send(JSON.stringify({ status: 500, message: error }));
@@ -417,11 +423,58 @@ class UserController {
     }
     deleteTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ticketId = req.body.ticketId;
+            const ticketId = req.query.id;
+            const user = req.user.id;
+            try {
+                const ticketCreatorInfo = yield ticketMod.findOne({ _id: ticketId }, { creator: 1, project: 1 });
+                const creator = ticketCreatorInfo.creator;
+                const projectCreatorInfo = yield projectMod.findOne({ _id: ticketCreatorInfo.project });
+                const projectCreator = projectCreatorInfo.creator;
+                if (user != creator && user != projectCreator) {
+                    return res.status(403).send(JSON.stringify({ status: 403, message: "Only project creator and ticket creator can delete this ticket" }));
+                }
+                ticketMod.deleteOne({ _id: ticketId }, (err, result) => {
+                    if (err)
+                        return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+                    return res.status(200).send(JSON.stringify({ status: 200, message: "Ticket deleted" }));
+                });
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: "Server error or ticket not exist" }));
+            }
         });
     }
     createTicketComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const io = req.app.get('socketio');
+            const sender = req.user.id;
+            const content = req.body.content;
+            const type = req.body.type || 1;
+            const receiveId = req.body.receiveId;
+            if (!sender || !content || !receiveId) {
+                return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
+            }
+            try {
+                commentMod.create({
+                    sender: sender,
+                    content: content,
+                    type: type,
+                    receiveId: receiveId
+                }, (err, result) => {
+                    if (err) {
+                        return res.send(JSON.stringify({
+                            status: 500, message: err
+                        }));
+                    }
+                    io.to(receiveId).emit("message", result);
+                    return res.send(JSON.stringify({ status: 200, message: result }));
+                });
+            }
+            catch (error) {
+                return res.send(JSON.stringify({
+                    status: 500, message: error
+                }));
+            }
         });
     }
     uploadTicketAttachment(req, res) {
@@ -458,15 +511,22 @@ class UserController {
     getComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.query.id;
+            const offset = req.query.offset || 0;
+            const limit = req.query.limit || Infinity;
             commentMod.find({
                 receiveId: id
-            }, (err, result) => {
+            }, (err, result) => __awaiter(this, void 0, void 0, function* () {
                 if (err)
                     return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
                 if (result.length == 0)
                     return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
-                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
-            });
+                let data = [];
+                for (const comment of result) {
+                    let sender = yield accountMod.findOne({ _id: comment.sender }, { password: 0 });
+                    data.push({ comment: comment, senderInfo: sender });
+                }
+                return res.status(200).send(JSON.stringify({ status: 200, data: data }));
+            })).skip(offset).limit(limit);
         });
     }
     getUserInfo(req, res) {
