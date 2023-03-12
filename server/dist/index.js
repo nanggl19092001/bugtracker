@@ -12,13 +12,8 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
     cors: '*'
 });
-const classUser = require('./middleware/user');
 const routes = require('./routes/index.route');
-<<<<<<< HEAD
 const PORT = process.env.PORT || 3000;
-=======
-const PORT = 5000 || process.env.PORT;
->>>>>>> e9f29248fbed21373ae0dfc539bdd05008d8008c
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

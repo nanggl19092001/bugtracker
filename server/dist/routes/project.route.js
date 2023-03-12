@@ -1,6 +1,7 @@
 "use strict";
 const RouterProject = require('express').Router();
 const UserControllerProject = require('../controllers/user.controller');
+RouterProject.get('/member', UserControllerProject.getProjectMember);
 RouterProject.post('/member', UserControllerProject.addProjectMember);
 RouterProject.delete('/member', UserControllerProject.deleteProjectMember);
 RouterProject.post('/comment', UserControllerProject.createProjectComment);

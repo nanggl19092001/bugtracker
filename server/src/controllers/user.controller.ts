@@ -53,17 +53,19 @@ class UserController implements UserControllerInterface{
                 }))
             }
 
+            const data = []
+
             for(let i = 0; i < projects.length; i++){
                 const creator = await accountMod.findOne(
                     {
                         _id: projects[i].creator
                     },{password: 0}
                 )
-                
+                data.push({project: projects[i], creator: creator})
                 
             }
 
-            return res.send(JSON.stringify({status: 200, data: projects}))
+            return res.send(JSON.stringify({status: 200, data: data}))
             
         } catch (error) {
             return res.send(JSON.stringify({status: 500, message: error}))
@@ -107,6 +109,29 @@ class UserController implements UserControllerInterface{
             return res.send(JSON.stringify({status: 500, message: e}))
         }
         
+    }
+
+    async getProjectMember(req: any, res: any) {
+        const project = req.query.id
+
+        if(!project){
+            return res.status(401).send(JSON.stringify({status: 401, message: "Project not found"}))
+        }
+
+        projectMembersMod.find({
+            projectId: project
+        }, async (err: any, result: any) => {
+            if(err)
+                return res.status(500).send(JSON.stringify({status: 500, message: "Bad query"}))
+            
+            let members = []
+            for(const member of result){
+                let memberInfo = await accountMod.findOne({_id: member.userId}, {password: 0})
+                members.push(memberInfo)
+            }
+            
+            return res.status(200).send(JSON.stringify({status: 200, data: members}))
+        })
     }
 
     async addProjectMember(req: any, res: any): Promise<void> {

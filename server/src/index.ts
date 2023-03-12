@@ -15,10 +15,9 @@ const io = require('socket.io')(http, {
     cors: '*'
 })
 
-const classUser = require('./middleware/user')
 const routes = require('./routes/index.route')
 
-const PORT = 5000 || process.env.PORT
+const PORT = process.env.PORT || 3000
 
 app.use(cors())
 app.use(express.json())

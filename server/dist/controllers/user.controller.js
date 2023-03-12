@@ -34,17 +34,14 @@ class UserController {
                         _id: attendProject.projectId,
                     }));
                 }
+                const data = [];
                 for (let i = 0; i < projects.length; i++) {
                     const creator = yield accountMod.findOne({
                         _id: projects[i].creator
                     }, { password: 0 });
+                    data.push({ project: projects[i], creator: creator });
                 }
-                for (let i = 0; i < projects.length; i++) {
-                    const creator = yield accountMod.findOne({
-                        _id: projects[i].creator
-                    }, { password: 0 });
-                }
-                return res.send(JSON.stringify({ status: 200, data: projects }));
+                return res.send(JSON.stringify({ status: 200, data: data }));
             }
             catch (error) {
                 return res.send(JSON.stringify({ status: 500, message: error }));
@@ -82,6 +79,26 @@ class UserController {
             catch (e) {
                 return res.send(JSON.stringify({ status: 500, message: e }));
             }
+        });
+    }
+    getProjectMember(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const project = req.query.id;
+            if (!project) {
+                return res.status(401).send(JSON.stringify({ status: 401, message: "Project not found" }));
+            }
+            projectMembersMod.find({
+                projectId: project
+            }, (err, result) => __awaiter(this, void 0, void 0, function* () {
+                if (err)
+                    return res.status(500).send(JSON.stringify({ status: 500, message: "Bad query" }));
+                let members = [];
+                for (const member of result) {
+                    let memberInfo = yield accountMod.findOne({ _id: member.userId }, { password: 0 });
+                    members.push(memberInfo);
+                }
+                return res.status(200).send(JSON.stringify({ status: 200, data: members }));
+            }));
         });
     }
     addProjectMember(req, res) {
