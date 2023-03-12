@@ -397,7 +397,7 @@ class UserController implements UserControllerInterface{
         const summary = req.body.summary
         const description = req.body.description || ""
         const severity = req.body.severity
-        const asignee = req.body.asignee
+        const asignee = req.body.assignee
         const version = req.body.version
         const deadline = req.body.deadline || 0
 
