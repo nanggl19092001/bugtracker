@@ -41,6 +41,7 @@ class UserController implements UserControllerInterface{
         const limit = req.query.limit || Infinity
 
         try {
+            const projectCount = await projectMembersMod.countDocuments({userId: req.user.id})
             const attendProjects = await projectMembersMod.find({
                 userId: req.user.id
             }).skip(offset).limit(limit)
@@ -62,10 +63,9 @@ class UserController implements UserControllerInterface{
                     },{password: 0}
                 )
                 data.push({project: projects[i], creator: creator})
-                
             }
 
-            return res.send(JSON.stringify({status: 200, data: data}))
+            return res.send(JSON.stringify({status: 200, data: data, count: projectCount}))
             
         } catch (error) {
             return res.send(JSON.stringify({status: 500, message: error}))
@@ -360,33 +360,43 @@ class UserController implements UserControllerInterface{
     async getUserTickets(req: any, res: any){
         const user = req.user.id
 
-        ticketMod.find({
-            $or: [
-                {createor: user},
-                {asignee: user}
-            ]
-        }, (error: any, result: any) => {
-            if(error)
-                return res.status(500).send(JSON.stringify({status: 500, message: "Bad request"}))
+        try {
+            const countTicket = await ticketMod.countDocuments({
+                $or: [
+                    {createor: user},
+                    {asignee: user}
+                ]
+            })
 
-                //if success
-                return res.status(200).send(JSON.stringify({
-                    status: 200, data: result
-                }))
-        })
+            const tickets = await ticketMod.find({
+                $or: [
+                    {createor: user},
+                    {asignee: user}
+                ]
+            })
+            return res.status(200).send(JSON.stringify({
+                status: 200, data: tickets, count: countTicket
+            }))
+        } catch (error) {
+            return res.status(500).send(JSON.stringify({status: 500, message: "Bad request"}))
+        }
     }
 
     async getProjectTickets(req: any, res: any){
         const project = req.query.id;
 
-        ticketMod.find({
-            project: project
-        }, (error: any, result: any) => {
-            if(error)
-                return res.status(500).send(JSON.stringify({status: 500, message: error}))
-            
-            return res.status(200).send(JSON.stringify({status: 200, data: result}))
-        })
+        try {
+            const countTicket = await ticketMod.countDocuments({
+                project: project
+            })
+            const tickets = await ticketMod.find({
+                project: project
+            })
+
+            return res.status(200).send(JSON.stringify({status: 200, data: tickets, count: countTicket}))
+        } catch (error) {
+            return res.status(500).send(JSON.stringify({status: 500, message: error}))
+        }
     }
 
     async createTicket(req: any, res: any){
@@ -596,23 +606,29 @@ class UserController implements UserControllerInterface{
         const offset = req.query.offset || 0
         const limit = req.query.limit || Infinity
 
-        commentMod.find({
-            receiveId: id
-        }, async (err: any, result: any) => {
-            if(err)
-                return res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
-            
-            if(result.length == 0)
+        try {
+            const countComment = await commentMod.countDocuments({
+                receiveId: id
+            })
+
+            const comments = await commentMod.find({
+                receiveId: id
+            }).skip(offset).limit(limit)
+
+            if(comments.length == 0)
                 return res.status(404).send(JSON.stringify({status: 404, message: "id not exist or no comment had been created"}))
             
             let data = []
-            for(const comment of result){
+            for(const comment of comments){
                 let sender = await accountMod.findOne({_id: comment.sender}, {password: 0})
                 data.push({comment: comment, senderInfo: sender})
             }
-            
-            return res.status(200).send(JSON.stringify({status: 200, data: data}))
-        }).skip(offset).limit(limit)
+
+            return res.status(200).send(JSON.stringify({status: 200, data: data, count: countComment}))
+        } catch (error) {
+            return res.status(500).send(JSON.stringify({status: 500, message: "Server error"}))
+        }
+        
     }
 
     async getUserInfo(req: any, res: any){

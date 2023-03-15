@@ -25,6 +25,7 @@ class UserController {
             const offset = req.query.offset || 0;
             const limit = req.query.limit || Infinity;
             try {
+                const projectCount = yield projectMembersMod.countDocuments({ userId: req.user.id });
                 const attendProjects = yield projectMembersMod.find({
                     userId: req.user.id
                 }).skip(offset).limit(limit);
@@ -41,7 +42,7 @@ class UserController {
                     }, { password: 0 });
                     data.push({ project: projects[i], creator: creator });
                 }
-                return res.send(JSON.stringify({ status: 200, data: data }));
+                return res.send(JSON.stringify({ status: 200, data: data, count: projectCount }));
             }
             catch (error) {
                 return res.send(JSON.stringify({ status: 500, message: error }));
@@ -303,31 +304,43 @@ class UserController {
     getUserTickets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = req.user.id;
-            ticketMod.find({
-                $or: [
-                    { createor: user },
-                    { asignee: user }
-                ]
-            }, (error, result) => {
-                if (error)
-                    return res.status(500).send(JSON.stringify({ status: 500, message: "Bad request" }));
-                //if success
+            try {
+                const countTicket = yield ticketMod.countDocuments({
+                    $or: [
+                        { createor: user },
+                        { asignee: user }
+                    ]
+                });
+                const tickets = yield ticketMod.find({
+                    $or: [
+                        { createor: user },
+                        { asignee: user }
+                    ]
+                });
                 return res.status(200).send(JSON.stringify({
-                    status: 200, data: result
+                    status: 200, data: tickets, count: countTicket
                 }));
-            });
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: "Bad request" }));
+            }
         });
     }
     getProjectTickets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const project = req.query.id;
-            ticketMod.find({
-                project: project
-            }, (error, result) => {
-                if (error)
-                    return res.status(500).send(JSON.stringify({ status: 500, message: error }));
-                return res.status(200).send(JSON.stringify({ status: 200, data: result }));
-            });
+            try {
+                const countTicket = yield ticketMod.countDocuments({
+                    project: project
+                });
+                const tickets = yield ticketMod.find({
+                    project: project
+                });
+                return res.status(200).send(JSON.stringify({ status: 200, data: tickets, count: countTicket }));
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: error }));
+            }
         });
     }
     createTicket(req, res) {
@@ -513,20 +526,25 @@ class UserController {
             const id = req.query.id;
             const offset = req.query.offset || 0;
             const limit = req.query.limit || Infinity;
-            commentMod.find({
-                receiveId: id
-            }, (err, result) => __awaiter(this, void 0, void 0, function* () {
-                if (err)
-                    return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
-                if (result.length == 0)
+            try {
+                const countComment = yield commentMod.countDocuments({
+                    receiveId: id
+                });
+                const comments = yield commentMod.find({
+                    receiveId: id
+                }).skip(offset).limit(limit);
+                if (comments.length == 0)
                     return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
                 let data = [];
-                for (const comment of result) {
+                for (const comment of comments) {
                     let sender = yield accountMod.findOne({ _id: comment.sender }, { password: 0 });
                     data.push({ comment: comment, senderInfo: sender });
                 }
-                return res.status(200).send(JSON.stringify({ status: 200, data: data }));
-            })).skip(offset).limit(limit);
+                return res.status(200).send(JSON.stringify({ status: 200, data: data, count: countComment }));
+            }
+            catch (error) {
+                return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
+            }
         });
     }
     getUserInfo(req, res) {
