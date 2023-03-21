@@ -1,6 +1,6 @@
 const logger = require('../utils/logger')
 const LogMess = require('../utils/logformat')
-const accountModel = require('../models/account.model')
+import accountModel from '../models/account.model'
 const regexEmail = require('../utils/constants')
 const bcrypt = require('bcrypt')
 const JwtMiddleware = require('../middleware/jwt')
@@ -25,10 +25,10 @@ class IndexController implements IndexControllerInterface{
         const email = req.body.email
         const password = req.body.password
 
+        accountModel.findOne({email: email})
         if(!email || !password){
             return res.send(JSON.stringify({status: 500, message: "Missing infomation"}))
         }
-
         try {
             const result = await accountModel.findOne({email: email})
             if(!result) {
@@ -96,6 +96,10 @@ class IndexController implements IndexControllerInterface{
 
         const token = req.query.token;
         const clientId = req.query.id;
+
+        if(!token || !clientId){
+            return res.status(401).send({status: 401, message: "Missing infomation"})
+        }
 
         const clientResult = await verifyOauth2Token(clientId, token)
 

@@ -18,4 +18,4 @@ const accountSchema = new mongoose.Schema<AccountModel>({
     password: {type: String, default: ""}
 })
 
-module.exports = mongoose.model<AccountModel>('account', accountSchema)
+export default mongoose.model<AccountModel>('account', accountSchema)

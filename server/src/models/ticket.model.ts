@@ -30,4 +30,4 @@ const ticketSchema = new mongoose.Schema<TicketModel>({
     deadline: {type: Date, required: false, default: 0}
 })
 
-module.exports = mongoose.model<TicketModel>('ticket', ticketSchema)
+export default mongoose.model<TicketModel>('ticket', ticketSchema)

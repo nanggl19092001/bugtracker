@@ -11,4 +11,4 @@ const projectSchema = new mongoose_1.default.Schema({
     deleted: { type: Boolean, default: false },
     creator: { type: mongoose_1.default.Types.ObjectId, required: true }
 });
-module.exports = mongoose_1.default.model('project', projectSchema);
+exports.default = mongoose_1.default.model('project', projectSchema);

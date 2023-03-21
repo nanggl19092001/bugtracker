@@ -3,6 +3,7 @@ import React, { useContext, useRef, useState } from "react";
 import Project from "./Project";
 import { HomeContext } from "../../Context/HomeContext";
 import Notification from "../notify/Notification";
+import IsLoading from "../notify/IsLoading";
 function Dashboard() {
   const { project, error, isLoading, SERVER_DOMAIN, token, reload, setReload} = useContext(HomeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -46,8 +47,8 @@ function Dashboard() {
     <div className="px-8 py-8">
       {notify && <Notification message={notify} type="success" />}
       <h2 className="text-xl font-bold">DashBoard</h2>
-      <div className="my-4 w-full h-fit min-h-[250px] bg-white rounded">
-        <h2 className="text-lg px-4 pt-2 text-text-color font-bold">Project</h2>
+      <div className="my-4 px-4 py-2 w-full h-fit min-h-[250px] bg-white rounded">
+        <h2 className="text-lg text-text-color font-bold">Project</h2>
         <div className="flex justify-end">
           <button
             className="bg-blue-600 text-white opacity-80 text-[14px] rounded-md 
@@ -136,9 +137,7 @@ function Dashboard() {
           </div>
         )}
         {isLoading ? (
-          <div className="flex items-center justify-center h-20">
-            <div className="w-10 h-10 border-4 border-t-5 border-t-blue-500 border-white rounded-full animate-spin"></div>
-          </div>
+          <IsLoading/>
         ) : (
           project && <Project project={project}/>
         )}

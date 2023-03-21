@@ -17,4 +17,4 @@ const ticketSchema = new mongoose_1.default.Schema({
     updated: { type: Date, default: Date.now },
     deadline: { type: Date, required: false, default: 0 }
 });
-module.exports = mongoose_1.default.model('ticket', ticketSchema);
+exports.default = mongoose_1.default.model('ticket', ticketSchema);

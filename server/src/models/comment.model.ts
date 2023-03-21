@@ -21,4 +21,4 @@ const commentSchema = new mongoose.Schema<CommentModel>({
     receiveId: String
 })
 
-module.exports = mongoose.model<CommentModel>('comment', commentSchema)
+export default mongoose.model<CommentModel>('comment', commentSchema)

@@ -17,10 +17,10 @@ function Navbar() {
 
   return (
     <div
-      className="sticky top-0 col-span-1 h-full bg-bg-nav
+      className="col-span-1 h-full bg-bg-nav
     drop-shadow-xl"
     >
-      <ul className="relative">
+      <ul className="sticky top-0">
         <li className="relative">
           <NavLink
             className="flex items-center text-lg py-4 px-6 h-14 overflow-hidden

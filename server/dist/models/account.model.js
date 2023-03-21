@@ -11,4 +11,4 @@ const accountSchema = new mongoose_1.default.Schema({
     oauth: { type: Boolean, default: false },
     password: { type: String, default: "" }
 });
-module.exports = mongoose_1.default.model('account', accountSchema);
+exports.default = mongoose_1.default.model('account', accountSchema);

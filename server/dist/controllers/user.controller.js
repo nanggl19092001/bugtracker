@@ -8,16 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
-const fs = require('fs');
-const path = require('path');
-const projectMod = require('../models/project.model');
-const projectMembersMod = require('../models/projectmember.model');
-const accountMod = require('../models/account.model');
-const valCre = require('../middleware/validateCreator');
-const commentMod = require('../models/comment.model');
-const ticketMod = require('../models/ticket.model');
+const fs_2 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const project_model_1 = __importDefault(require("../models/project.model"));
+const projectmember_model_1 = __importDefault(require("../models/projectmember.model"));
+const account_model_1 = __importDefault(require("../models/account.model"));
+const validateCreator_1 = __importDefault(require("../middleware/validateCreator"));
+const comment_model_1 = __importDefault(require("../models/comment.model"));
+const ticket_model_1 = __importDefault(require("../models/ticket.model"));
 class UserController {
     //Get projects which user attended
     getUserProjects(req, res) {
@@ -25,19 +28,19 @@ class UserController {
             const offset = req.query.offset || 0;
             const limit = req.query.limit || Infinity;
             try {
-                const projectCount = yield projectMembersMod.countDocuments({ userId: req.user.id });
-                const attendProjects = yield projectMembersMod.find({
+                const projectCount = yield projectmember_model_1.default.countDocuments({ userId: req.user.id });
+                const attendProjects = yield projectmember_model_1.default.find({
                     userId: req.user.id
                 }).skip(offset).limit(limit);
                 const projects = [];
                 for (let attendProject of attendProjects) {
-                    projects.push(yield projectMod.findOne({
+                    projects.push(yield project_model_1.default.findOne({
                         _id: attendProject.projectId,
                     }));
                 }
                 const data = [];
                 for (let i = 0; i < projects.length; i++) {
-                    const creator = yield accountMod.findOne({
+                    const creator = yield account_model_1.default.findOne({
                         _id: projects[i].creator
                     }, { password: 0 });
                     data.push({ project: projects[i], creator: creator });
@@ -64,14 +67,14 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
             }
             try {
-                const result = yield projectMod.create({
+                const result = yield project_model_1.default.create({
                     name: name,
                     description: description,
                     end: end,
                     creator: creator
                 });
                 const projectCreatedId = result.id;
-                yield projectMembersMod.create({
+                yield projectmember_model_1.default.create({
                     userId: creator,
                     projectId: projectCreatedId
                 });
@@ -88,14 +91,14 @@ class UserController {
             if (!project) {
                 return res.status(401).send(JSON.stringify({ status: 401, message: "Project not found" }));
             }
-            projectMembersMod.find({
+            projectmember_model_1.default.find({
                 projectId: project
             }, (err, result) => __awaiter(this, void 0, void 0, function* () {
                 if (err)
                     return res.status(500).send(JSON.stringify({ status: 500, message: "Bad query" }));
                 let members = [];
                 for (const member of result) {
-                    let memberInfo = yield accountMod.findOne({ _id: member.userId }, { password: 0 });
+                    let memberInfo = yield account_model_1.default.findOne({ _id: member.userId }, { password: 0 });
                     members.push(memberInfo);
                 }
                 return res.status(200).send(JSON.stringify({ status: 200, data: members }));
@@ -107,14 +110,14 @@ class UserController {
             const newMemberId = req.body.user;
             const projectId = req.body.project;
             try {
-                const existMember = yield projectMembersMod.find({
+                const existMember = yield projectmember_model_1.default.find({
                     userId: newMemberId,
                     projectId: projectId
                 });
                 if (existMember.length > 0) {
                     return res.send(JSON.stringify({ status: 406, message: "Member already added into project" }));
                 }
-                yield projectMembersMod.create({
+                yield projectmember_model_1.default.create({
                     userId: newMemberId,
                     projectId: projectId
                 });
@@ -132,7 +135,7 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Missing searching information" }));
             }
             const regexForFindingUser = new RegExp(`${keyword}`, "i");
-            accountMod.find({
+            account_model_1.default.find({
                 $or: [
                     {
                         email: regexForFindingUser
@@ -162,10 +165,10 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Missing information" }));
             }
             try {
-                if (!valCre(req.user.id, project)) {
+                if (!(0, validateCreator_1.default)(req.user.id, project)) {
                     return res.send(JSON.stringify({ status: 401, message: "Only creator can add member to this project" }));
                 }
-                projectMembersMod.deleteOne({
+                projectmember_model_1.default.deleteOne({
                     userId: user,
                     projectId: project
                 }, (error, result) => {
@@ -187,17 +190,17 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Missing information" }));
             }
             try {
-                if (!valCre(req.user.id, project)) {
+                if (!(0, validateCreator_1.default)(req.user.id, project)) {
                     return res.send(JSON.stringify({ status: 401, message: "Only creator can add member to this project" }));
                 }
-                projectMod.deleteOne({
+                project_model_1.default.deleteOne({
                     _id: project
                 }, (error, result) => {
                     if (error) {
                         return res.send(JSON.stringify({ status: 500, message: error }));
                     }
                     else {
-                        projectMembersMod.deleteMany({
+                        projectmember_model_1.default.deleteMany({
                             projectId: project
                         }, (error, result) => {
                             if (error) {
@@ -228,10 +231,10 @@ class UserController {
                 return res.send(JSON.stringify({ status: 400, message: "Invalid deadline" }));
             }
             try {
-                if (!valCre(req.user.id, project)) {
+                if (!(0, validateCreator_1.default)(req.user.id, project)) {
                     return res.send(JSON.stringify({ status: 401, message: "Only creator can make change to this project" }));
                 }
-                projectMod.updateOne({
+                project_model_1.default.updateOne({
                     _id: project
                 }, {
                     name: name,
@@ -262,7 +265,7 @@ class UserController {
                 return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
             }
             try {
-                commentMod.create({
+                comment_model_1.default.create({
                     sender: sender,
                     content: content,
                     type: type,
@@ -287,10 +290,12 @@ class UserController {
     getTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const ticketId = req.query.id;
+            const offset = req.query.offset || 0;
+            const limit = req.query.limit || Infinity;
             if (!ticketId) {
                 return res.status(401).send(JSON.stringify({ status: 401, message: "Missing ticket id" }));
             }
-            ticketMod.findOne({
+            ticket_model_1.default.findOne({
                 _id: ticketId
             }, (result, error) => {
                 if (error)
@@ -305,13 +310,13 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const user = req.user.id;
             try {
-                const countTicket = yield ticketMod.countDocuments({
+                const countTicket = yield ticket_model_1.default.countDocuments({
                     $or: [
                         { createor: user },
                         { asignee: user }
                     ]
                 });
-                const tickets = yield ticketMod.find({
+                const tickets = yield ticket_model_1.default.find({
                     $or: [
                         { createor: user },
                         { asignee: user }
@@ -330,10 +335,10 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const project = req.query.id;
             try {
-                const countTicket = yield ticketMod.countDocuments({
+                const countTicket = yield ticket_model_1.default.countDocuments({
                     project: project
                 });
-                const tickets = yield ticketMod.find({
+                const tickets = yield ticket_model_1.default.find({
                     project: project
                 });
                 return res.status(200).send(JSON.stringify({ status: 200, data: tickets, count: countTicket }));
@@ -367,14 +372,14 @@ class UserController {
                 }
             }
             try {
-                const result = projectMembersMod.findOne({
+                const result = projectmember_model_1.default.findOne({
                     userId: asignee,
                     projectId: project
                 });
                 if (!result) {
                     return res.status(404).send({ status: 404, message: "User not found in this project" });
                 }
-                ticketMod.create({
+                ticket_model_1.default.create({
                     creator: creator,
                     project: project,
                     summary: summary,
@@ -405,7 +410,7 @@ class UserController {
             const deadline = req.body.deadline || 0;
             const status = req.body.status;
             try {
-                const result = yield ticketMod.findOne({
+                const result = yield ticket_model_1.default.findOne({
                     _id: ticketId
                 });
                 if (!result) {
@@ -414,7 +419,7 @@ class UserController {
                 if (result.creator != user) {
                     return res.status(403).send(JSON.stringify({ status: 403, message: "Only ticket creator can modify this ticket !" }));
                 }
-                ticketMod.updateOne({
+                ticket_model_1.default.updateOne({
                     _id: ticketId
                 }, {
                     summary: summary,
@@ -439,14 +444,14 @@ class UserController {
             const ticketId = req.query.id;
             const user = req.user.id;
             try {
-                const ticketCreatorInfo = yield ticketMod.findOne({ _id: ticketId }, { creator: 1, project: 1 });
+                const ticketCreatorInfo = yield ticket_model_1.default.findOne({ _id: ticketId }, { creator: 1, project: 1 });
                 const creator = ticketCreatorInfo.creator;
-                const projectCreatorInfo = yield projectMod.findOne({ _id: ticketCreatorInfo.project });
+                const projectCreatorInfo = yield project_model_1.default.findOne({ _id: ticketCreatorInfo.project });
                 const projectCreator = projectCreatorInfo.creator;
                 if (user != creator && user != projectCreator) {
                     return res.status(403).send(JSON.stringify({ status: 403, message: "Only project creator and ticket creator can delete this ticket" }));
                 }
-                ticketMod.deleteOne({ _id: ticketId }, (err, result) => {
+                ticket_model_1.default.deleteOne({ _id: ticketId }, (err, result) => {
                     if (err)
                         return res.status(500).send(JSON.stringify({ status: 500, message: "Server error" }));
                     return res.status(200).send(JSON.stringify({ status: 200, message: "Ticket deleted" }));
@@ -468,7 +473,7 @@ class UserController {
                 return res.send(JSON.stringify({ status: 401, message: "Missing infomation" }));
             }
             try {
-                commentMod.create({
+                comment_model_1.default.create({
                     sender: sender,
                     content: content,
                     type: type,
@@ -493,11 +498,11 @@ class UserController {
     uploadTicketAttachment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + req.body.id))) {
-                    fs.renameSync(path.join(__dirname, '../../public/files/temp'), path.join(__dirname, '../../public/files/' + req.body.id));
+                if (!fs_2.default.existsSync(path_1.default.join(__dirname, '../../public/files/' + req.body.id))) {
+                    fs_2.default.renameSync(path_1.default.join(__dirname, '../../public/files/temp'), path_1.default.join(__dirname, '../../public/files/' + req.body.id));
                 }
                 else {
-                    fs.renameSync(req.file.path, path.join(__dirname, '../../public/files/' + req.body.id + '/' + req.file.originalname));
+                    fs_2.default.renameSync(req.file.path, path_1.default.join(__dirname, '../../public/files/' + req.body.id + '/' + req.file.originalname));
                     // fs.unlinkSync(req.file.path)
                 }
             }
@@ -511,9 +516,9 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const ticketId = req.query.id;
             try {
-                if (!fs.existsSync(path.join(__dirname, '../../public/files/' + ticketId)))
+                if (!fs_2.default.existsSync(path_1.default.join(__dirname, '../../public/files/' + ticketId)))
                     return res.send(JSON.stringify({ status: 200, filesName: [] }));
-                const files = (0, fs_1.readdirSync)(path.join(__dirname, '../../public/files/' + ticketId));
+                const files = (0, fs_1.readdirSync)(path_1.default.join(__dirname, '../../public/files/' + ticketId));
                 return res.status(200).send(JSON.stringify({ status: 200, filesName: files }));
             }
             catch (error) {
@@ -527,17 +532,17 @@ class UserController {
             const offset = req.query.offset || 0;
             const limit = req.query.limit || Infinity;
             try {
-                const countComment = yield commentMod.countDocuments({
+                const countComment = yield comment_model_1.default.countDocuments({
                     receiveId: id
                 });
-                const comments = yield commentMod.find({
+                const comments = yield comment_model_1.default.find({
                     receiveId: id
                 }).skip(offset).limit(limit);
                 if (comments.length == 0)
-                    return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
+                    return res.status(200).send(JSON.stringify({ status: 200, message: "id not exist or no comment had been created" }));
                 let data = [];
                 for (const comment of comments) {
-                    let sender = yield accountMod.findOne({ _id: comment.sender }, { password: 0 });
+                    let sender = yield account_model_1.default.findOne({ _id: comment.sender }, { password: 0 });
                     data.push({ comment: comment, senderInfo: sender });
                 }
                 return res.status(200).send(JSON.stringify({ status: 200, data: data, count: countComment }));
@@ -550,7 +555,7 @@ class UserController {
     getUserInfo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const requestUserId = req.query.id;
-            accountMod.findOne({
+            account_model_1.default.findOne({
                 _id: requestUserId
             }, { password: 0 }, (err, result) => {
                 if (err)
@@ -559,6 +564,10 @@ class UserController {
                     return res.status(404).send(JSON.stringify({ status: 404, message: "Invalid user" }));
                 return res.status(200).send(JSON.stringify({ status: 200, data: result }));
             });
+        });
+    }
+    getNotification(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }

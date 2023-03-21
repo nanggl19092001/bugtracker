@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const projectModel = require('../models/project.model');
 function validateCre(userId, projectId) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -27,4 +28,4 @@ function validateCre(userId, projectId) {
         return false;
     });
 }
-module.exports = validateCre;
+exports.default = validateCre;

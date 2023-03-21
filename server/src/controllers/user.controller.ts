@@ -1,14 +1,14 @@
 import { readdirSync } from "fs"
 import { Socket } from "socket.io"
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
 
-const projectMod = require('../models/project.model')
-const projectMembersMod = require('../models/projectmember.model')
-const accountMod = require('../models/account.model')
-const valCre = require('../middleware/validateCreator')
-const commentMod = require('../models/comment.model')
-const ticketMod = require('../models/ticket.model')
+import projectMod from '../models/project.model'
+import projectMembersMod from '../models/projectmember.model'
+import accountMod from '../models/account.model'
+import valCre from '../middleware/validateCreator'
+import commentMod from '../models/comment.model'
+import ticketMod from '../models/ticket.model'
 
 interface UserControllerInterface {
     getUserProjects(req: any, res: any): Promise<void>
@@ -29,6 +29,7 @@ interface UserControllerInterface {
     uploadTicketAttachment(req: any, res: any): Promise<void>
     createTicketComment(req: any, res: any): Promise<void>
 
+    getNotification(req: any, res: any): Promise<void>;
     getComment(req: any, res: any): Promise<void>
     getUserInfo(req: any, res: any): Promise<void>
 }
@@ -341,6 +342,8 @@ class UserController implements UserControllerInterface{
 
     async getTicket(req: any, res: any){
         const ticketId = req.query.id;
+        const offset = req.query.offset || 0
+        const limit = req.query.limit || Infinity
 
         if(!ticketId){
             return res.status(401).send(JSON.stringify({status: 401, message: "Missing ticket id"}))
@@ -616,7 +619,7 @@ class UserController implements UserControllerInterface{
             }).skip(offset).limit(limit)
 
             if(comments.length == 0)
-                return res.status(404).send(JSON.stringify({status: 404, message: "id not exist or no comment had been created"}))
+                return res.status(200).send(JSON.stringify({status: 200, message: "id not exist or no comment had been created"}))
             
             let data = []
             for(const comment of comments){
@@ -644,6 +647,10 @@ class UserController implements UserControllerInterface{
 
             return res.status(200).send(JSON.stringify({status: 200, data: result}))
         })
+    }
+
+    async getNotification(req: any, res: any) {
+        
     }
 }
 

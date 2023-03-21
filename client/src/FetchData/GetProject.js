@@ -3,6 +3,7 @@ import { useState, useEffect} from "react";
 
 const GetProject = (url, reload) => {
   const [data, setData] = useState(null);
+  const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,6 +19,7 @@ const GetProject = (url, reload) => {
       })
       .then((data) => {
         setData(data.data);
+        setCount(data.count);
         setIsLoading(false);
         setError(null);
       })
@@ -31,7 +33,7 @@ const GetProject = (url, reload) => {
     return () => abortCont.abort();
   }, [url, reload]);
 
-  return { data, isLoading, error };
+  return { data, count, isLoading, error };
 };
 
 export default GetProject;

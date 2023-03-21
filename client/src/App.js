@@ -16,7 +16,7 @@ function App() {
 
     return(
         <AppProvider>
-            <div className="font-poppins">
+            <div className="font-poppins box-border">
             <BrowserRouter>
                 <Routes>
                     <Route path="/register" element={<Register/>}/>
