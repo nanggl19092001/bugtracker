@@ -18,6 +18,8 @@ Router.use('/', (req, res, next) => {
 });
 Router.use('/project', RP);
 Router.use('/ticket', RT);
+Router.post('/password', UserControllers.changePassword);
+Router.get('/profile', UserControllers.getUserProfile);
 Router.get('/comment', UserControllers.getComment);
 Router.get('/search', UserControllers.searchUser);
 Router.get('/info', UserControllers.getUserInfo);

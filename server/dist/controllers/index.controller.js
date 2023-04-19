@@ -145,6 +145,11 @@ class IndexController {
             }
         });
     }
+    getVerifyToken(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const email = req.body.email;
+        });
+    }
     auth(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             return res;

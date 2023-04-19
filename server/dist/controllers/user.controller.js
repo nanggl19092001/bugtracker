@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const fs_2 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const project_model_1 = __importDefault(require("../models/project.model"));
 const projectmember_model_1 = __importDefault(require("../models/projectmember.model"));
 const account_model_1 = __importDefault(require("../models/account.model"));
@@ -563,6 +564,107 @@ class UserController {
                 if (!result)
                     return res.status(404).send(JSON.stringify({ status: 404, message: "Invalid user" }));
                 return res.status(200).send(JSON.stringify({ status: 200, data: result }));
+            });
+        });
+    }
+    changePassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { password, newPassword } = req.body;
+            if (!password || !newPassword) {
+                return res.status(400).send(JSON.stringify({
+                    status: 400,
+                    message: "Missing infomation !"
+                }));
+            }
+            try {
+                const result = yield account_model_1.default.findOne({
+                    _id: req.user.id
+                });
+                if (!result) {
+                    return res.status(404).send(JSON.stringify({
+                        status: 404,
+                        message: "User not exist"
+                    }));
+                }
+                const compareResult = yield bcrypt_1.default.compare(password, result.password);
+                console.log(compareResult);
+                if (!compareResult) {
+                    return res.status(400).send(JSON.stringify({
+                        status: 400,
+                        message: "Password not match"
+                    }));
+                }
+                const newHashPassword = yield bcrypt_1.default.hash(newPassword, 10);
+                account_model_1.default.updateOne({
+                    _id: req.user.id,
+                }, {
+                    password: newHashPassword
+                }, (err, result) => {
+                    if (err) {
+                        return res.status(500).send(JSON.stringify({
+                            status: 500,
+                            message: err
+                        }));
+                    }
+                    return res.status(200).send(JSON.stringify({
+                        status: 200,
+                        message: 'Password changed successfully'
+                    }));
+                });
+            }
+            catch (error) {
+                if (error)
+                    return res.status(500).send(JSON.stringify({
+                        status: 500,
+                        message: "Server error !"
+                    }));
+            }
+        });
+    }
+    getUserProfile(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            account_model_1.default.findOne({
+                _id: req.user.id
+            }, {
+                password: 0
+            }).then(result => {
+                return res.status(200).send(JSON.stringify({
+                    status: 200,
+                    data: result
+                }));
+            }).catch(err => {
+                return res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Server error"
+                }));
+            });
+        });
+    }
+    alterUserProfile(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { firstname, lastname } = req.body;
+            if (!firstname || !lastname) {
+                return res.status(400).send(JSON.stringify({
+                    status: 400,
+                    message: "Missing infomation"
+                }));
+            }
+            account_model_1.default.updateOne({
+                _id: req.user.id
+            }, {
+                firstname: firstname,
+                lastname: lastname
+            }).then(result => {
+                return res.status(200).send(JSON.stringify({
+                    status: 200,
+                    message: "Account Infomation update successfully !"
+                }));
+            }).catch(error => {
+                if (error)
+                    return res.status(500).send(JSON.stringify({
+                        status: 500,
+                        message: 'Server error'
+                    }));
             });
         });
     }

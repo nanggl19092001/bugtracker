@@ -15,7 +15,6 @@ function route(app: Express) {
     
     app.post('/auth/signup', IndexController.signUp)
     
-
     app.get('/', (req: any,res: any) => {
         return res.render('home')
     })

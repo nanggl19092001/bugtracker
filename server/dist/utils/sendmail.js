@@ -8,27 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const project_model_1 = __importDefault(require("../models/project.model"));
-function validateCre(userId, projectId) {
+exports.sendmail = void 0;
+const nodemailer = require('nodemailer');
+function sendmail(to, subject, text) {
     return __awaiter(this, void 0, void 0, function* () {
-        project_model_1.default.findOne({
-            _id: projectId
-        }, (error, result) => {
-            if (error) {
-                return false;
+        const testAccount = yield nodemailer.createTestAccount();
+        let transporter = nodemailer.createTransport({
+            host: "smtp.ethereal.email",
+            port: 587,
+            secure: false,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass,
             }
-            if (!result)
-                return false;
-            if (result.creator == userId)
-                return true;
-            else
-                return false;
         });
-        return false;
+        let info = yield transporter.sendMail({
+            from: '"Fred Foo 👻" <foo@example.com>',
+            to: "bar@example.com, baz@example.com",
+            subject: "Hello ✔",
+            text: "Hello world?",
+            html: "<b>Hello world?</b>", // html body
+        });
     });
 }
-exports.default = validateCre;
+exports.sendmail = sendmail;

@@ -19,9 +19,14 @@ Router.use('/', (req: any,res: any,next: any) => {
     }
 })
 
+
 Router.use('/project',RP)
 
 Router.use('/ticket', RT)
+
+Router.post('/password', UserControllers.changePassword)
+
+Router.get('/profile', UserControllers.getUserProfile)
 
 Router.get('/comment', UserControllers.getComment)
 

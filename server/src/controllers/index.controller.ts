@@ -156,6 +156,12 @@ class IndexController implements IndexControllerInterface{
         }
     }
 
+    async getVerifyToken(req: any, res: any){
+        const email = req.body.email
+
+
+    }
+
     async auth(req: any, res: any): Promise<void>{
         return res
     }

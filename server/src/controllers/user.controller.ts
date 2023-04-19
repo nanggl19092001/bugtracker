@@ -2,6 +2,7 @@ import { readdirSync } from "fs"
 import { Socket } from "socket.io"
 import fs from 'fs'
 import path from 'path'
+import bcrypt from 'bcrypt'
 
 import projectMod from '../models/project.model'
 import projectMembersMod from '../models/projectmember.model'
@@ -32,6 +33,9 @@ interface UserControllerInterface {
     getNotification(req: any, res: any): Promise<void>;
     getComment(req: any, res: any): Promise<void>
     getUserInfo(req: any, res: any): Promise<void>
+
+    changePassword(req: any, res: any): Promise<void>
+    getUserProfile(req: any, res: any): Promise<void>
 }
 
 class UserController implements UserControllerInterface{
@@ -646,6 +650,111 @@ class UserController implements UserControllerInterface{
                 return res.status(404).send(JSON.stringify({status: 404, message: "Invalid user"}))
 
             return res.status(200).send(JSON.stringify({status: 200, data: result}))
+        })
+    }
+
+    async changePassword(req: any, res: any) {
+        const { password, newPassword } = req.body
+        if(!password || !newPassword) {
+            return res.status(400).send(JSON.stringify({
+                status: 400,
+                message: "Missing infomation !"
+            }))
+        }
+        try {
+            const result = await accountMod.findOne({
+                _id: req.user.id
+            })
+            
+            if(!result){
+                return res.status(404).send(JSON.stringify({
+                    status: 404,
+                    message: "User not exist"
+                }))
+            }
+
+            const compareResult = await bcrypt.compare(password, result.password)
+
+            console.log(compareResult)
+
+            if(!compareResult){
+                return res.status(400).send(JSON.stringify({
+                    status: 400,
+                    message: "Password not match"
+                }))
+            }
+
+            const newHashPassword = await bcrypt.hash(newPassword, 10)
+            accountMod.updateOne({
+                _id: req.user.id,
+            }, {
+                password: newHashPassword
+            }, (err: any, result: any) => {
+                if(err) {
+                    return res.status(500).send(JSON.stringify({
+                        status: 500,
+                        message: err
+                    }))
+                }
+
+                return res.status(200).send(JSON.stringify({
+                    status: 200,
+                    message: 'Password changed successfully'
+                }))
+            })
+        } catch (error) {
+            if(error)
+                return res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Server error !"
+                }))
+        }
+    }
+
+    async getUserProfile(req: any, res: any) {
+        accountMod.findOne({
+            _id: req.user.id
+        }, {
+            password: 0
+        }).then(result => {
+            return res.status(200).send(JSON.stringify({
+                status: 200,
+                data: result
+            }))
+        }).catch(err => {
+            return res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Server error"
+            }))
+        })
+    }
+
+    async alterUserProfile(req: any, res: any) {
+        const { firstname, lastname } = req.body
+
+        if(!firstname || !lastname ) {
+            return res.status(400).send(JSON.stringify({
+                status: 400,
+                message: "Missing infomation"
+            }))
+        }
+
+        accountMod.updateOne({
+            _id: req.user.id
+        }, {
+            firstname: firstname,
+            lastname: lastname
+        }).then( result => {
+            return res.status(200).send(JSON.stringify({
+                status: 200,
+                message: "Account Infomation update successfully !"
+            }))
+        }).catch(error => {
+            if(error)
+                return res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: 'Server error'
+                }))
         })
     }
 
