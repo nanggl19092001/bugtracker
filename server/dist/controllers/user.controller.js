@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const fs_2 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcrypt = require('bcrypt');
 const project_model_1 = __importDefault(require("../models/project.model"));
 const projectmember_model_1 = __importDefault(require("../models/projectmember.model"));
 const account_model_1 = __importDefault(require("../models/account.model"));
@@ -586,7 +586,7 @@ class UserController {
                         message: "User not exist"
                     }));
                 }
-                const compareResult = yield bcrypt_1.default.compare(password, result.password);
+                const compareResult = yield bcrypt.compare(password, result.password);
                 console.log(compareResult);
                 if (!compareResult) {
                     return res.status(400).send(JSON.stringify({
@@ -594,7 +594,7 @@ class UserController {
                         message: "Password not match"
                     }));
                 }
-                const newHashPassword = yield bcrypt_1.default.hash(newPassword, 10);
+                const newHashPassword = yield bcrypt.hash(newPassword, 10);
                 account_model_1.default.updateOne({
                     _id: req.user.id,
                 }, {

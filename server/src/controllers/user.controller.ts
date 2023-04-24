@@ -2,7 +2,7 @@ import { readdirSync } from "fs"
 import { Socket } from "socket.io"
 import fs from 'fs'
 import path from 'path'
-import bcrypt from 'bcrypt'
+const bcrypt = require('bcrypt')
 
 import projectMod from '../models/project.model'
 import projectMembersMod from '../models/projectmember.model'
@@ -64,7 +64,7 @@ class UserController implements UserControllerInterface{
             for(let i = 0; i < projects.length; i++){
                 const creator = await accountMod.findOne(
                     {
-                        _id: projects[i].creator
+                        _id: projects[i]!.creator
                     },{password: 0}
                 )
                 data.push({project: projects[i], creator: creator})
@@ -520,10 +520,10 @@ class UserController implements UserControllerInterface{
 
         try {
             const ticketCreatorInfo = await ticketMod.findOne({_id: ticketId}, {creator: 1, project: 1})
-            const creator = ticketCreatorInfo.creator
+            const creator = ticketCreatorInfo!.creator
 
-            const projectCreatorInfo = await projectMod.findOne({_id: ticketCreatorInfo.project})
-            const projectCreator = projectCreatorInfo.creator
+            const projectCreatorInfo = await projectMod.findOne({_id: ticketCreatorInfo!.project})
+            const projectCreator = projectCreatorInfo!.creator
 
             if(user != creator && user != projectCreator){
                 return res.status(403).send(JSON.stringify({status: 403, message: "Only project creator and ticket creator can delete this ticket"}))
