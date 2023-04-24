@@ -11,19 +11,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendmail = void 0;
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 function sendmail(to, subject, text) {
     return __awaiter(this, void 0, void 0, function* () {
         const testAccount = yield nodemailer.createTestAccount();
         const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
+            service: 'gmail',
             auth: {
-                user: 'craig73@ethereal.email',
-                pass: 'XNhzgcrWWJ5a3CsqzW'
+                user: process.env.EMAIL,
+                pass: process.env.PASS
             }
         });
         let info = yield transporter.sendMail({
-            from: 'craig73@ethereal.email',
+            from: process.env.EMAIL,
             to: to,
             subject: subject,
             html: text, // html body
