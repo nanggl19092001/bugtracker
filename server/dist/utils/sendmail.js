@@ -14,21 +14,19 @@ const nodemailer = require('nodemailer');
 function sendmail(to, subject, text) {
     return __awaiter(this, void 0, void 0, function* () {
         const testAccount = yield nodemailer.createTestAccount();
-        let transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
             port: 587,
-            secure: false,
             auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
+                user: 'craig73@ethereal.email',
+                pass: 'XNhzgcrWWJ5a3CsqzW'
             }
         });
         let info = yield transporter.sendMail({
-            from: '"Fred Foo 👻" <foo@example.com>',
-            to: "bar@example.com, baz@example.com",
-            subject: "Hello ✔",
-            text: "Hello world?",
-            html: "<b>Hello world?</b>", // html body
+            from: 'craig73@ethereal.email',
+            to: to,
+            subject: subject,
+            html: text, // html body
         });
     });
 }

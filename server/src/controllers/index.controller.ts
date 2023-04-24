@@ -1,6 +1,12 @@
 const logger = require('../utils/logger')
 const LogMess = require('../utils/logformat')
+import { Verify } from 'crypto'
+import { resolveSoa } from 'dns'
 import accountModel from '../models/account.model'
+import ticketModel from '../models/ticket.model'
+import tokenModel from '../models/verify.model'
+import { genToken } from '../utils/gentoken'
+import { sendmail } from '../utils/sendmail'
 const regexEmail = require('../utils/constants')
 const bcrypt = require('bcrypt')
 const JwtMiddleware = require('../middleware/jwt')
@@ -12,6 +18,8 @@ interface IndexControllerInterface {
     signUp(req: any, res: any): Promise<void>
     checkSignUp(req: any, res: any): Promise<void>
     auth(req: any, res: any): Promise<void>
+    getVerifyEmailToken(req: any, res: any): Promise<void>
+    verifyEmailToken(req: any, res: any): Promise<void>
 }
 
 class IndexController implements IndexControllerInterface{
@@ -156,10 +164,84 @@ class IndexController implements IndexControllerInterface{
         }
     }
 
-    async getVerifyToken(req: any, res: any){
+    async getVerifyEmailToken(req: any, res: any){
         const email = req.body.email
 
+        if(!email){
+            return res.status(400).send(JSON.stringify({
+                status: 400,
+                message: "Missing infomation"
+            }))
+        }
 
+        try {
+            const token = genToken()
+
+            await sendmail(email, 'Verify token', "Your verify token is " + token + ", token will expired after 5 minutes")
+
+            await tokenModel.create({
+                token: token,
+                email: email,
+                end: Date.now() + 1000*60*5
+            })
+
+            return res.status(200).send(JSON.stringify({
+                status: 200,
+                message: "Token send successfully"
+            }))
+
+        } catch (error) {
+            if(error){
+                return res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Server error"
+                }))
+            }    
+        }
+    }
+
+    async verifyEmailToken(req: any, res: any): Promise<void> {
+        const email = req.body.email
+        const token = req.body.token
+
+        try {
+            const result = await tokenModel.findOne({
+                email: email,
+                token: token
+            })
+
+            if(!result){
+                return res.status(404).send(JSON.stringify({
+                    status: 404,
+                    message: "Token not found"
+                }))
+            }
+
+            const expiredDate = new Date(result.end)
+
+            if(expiredDate < new Date()) {
+                return res.status(400).send(JSON.stringify({
+                    status: 400,
+                    message: "Token expired"
+                }))
+            }
+
+            await tokenModel.deleteMany({
+                email: email
+            })
+
+            return res.status(200).send(JSON.stringify({
+                status: 200,
+                message: "Email verify successfully"
+            }))
+        } catch (error) {
+            if(error){
+                return res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Server error"
+                }))
+            }
+        }
     }
 
     async auth(req: any, res: any): Promise<void>{

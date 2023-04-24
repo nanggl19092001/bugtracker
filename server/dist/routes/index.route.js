@@ -9,6 +9,8 @@ function route(app) {
     app.post('/auth/signin', IndexController.signIn);
     app.get('/auth/signin', IndexController.checkSignUp);
     app.post('/auth/signup', IndexController.signUp);
+    app.post('/auth/email/verify', IndexController.verifyEmailToken);
+    app.post('/auth/email', IndexController.getVerifyEmailToken);
     app.get('/', (req, res) => {
         return res.render('home');
     });

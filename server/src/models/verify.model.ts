@@ -9,7 +9,7 @@ interface Verify {
 
 interface VerifyModel extends Verify, mongoose.Document{}
 
-const commentSchema = new mongoose.Schema<VerifyModel>({
+const verifySchema = new mongoose.Schema<VerifyModel>({
     email: {
         type: String,
         required: true
@@ -23,4 +23,4 @@ const commentSchema = new mongoose.Schema<VerifyModel>({
         default: Date.now
     }
 })
-export default commentSchema
+export default mongoose.model<VerifyModel>('verify', verifySchema)

@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const logger = require('../utils/logger');
 const LogMess = require('../utils/logformat');
 const account_model_1 = __importDefault(require("../models/account.model"));
+const verify_model_1 = __importDefault(require("../models/verify.model"));
+const gentoken_1 = require("../utils/gentoken");
+const sendmail_1 = require("../utils/sendmail");
 const regexEmail = require('../utils/constants');
 const bcrypt = require('bcrypt');
 const JwtMiddleware = require('../middleware/jwt');
@@ -145,9 +148,76 @@ class IndexController {
             }
         });
     }
-    getVerifyToken(req, res) {
+    getVerifyEmailToken(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const email = req.body.email;
+            if (!email) {
+                return res.status(400).send(JSON.stringify({
+                    status: 400,
+                    message: "Missing infomation"
+                }));
+            }
+            try {
+                const token = (0, gentoken_1.genToken)();
+                yield (0, sendmail_1.sendmail)(email, 'Verify token', "Your verify token is " + token + ", token will expired after 5 minutes");
+                yield verify_model_1.default.create({
+                    token: token,
+                    email: email,
+                    end: Date.now() + 1000 * 60 * 5
+                });
+                return res.status(200).send(JSON.stringify({
+                    status: 200,
+                    message: "Token send successfully"
+                }));
+            }
+            catch (error) {
+                if (error) {
+                    return res.status(500).send(JSON.stringify({
+                        status: 500,
+                        message: "Server error"
+                    }));
+                }
+            }
+        });
+    }
+    verifyEmailToken(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const email = req.body.email;
+            const token = req.body.token;
+            try {
+                const result = yield verify_model_1.default.findOne({
+                    email: email,
+                    token: token
+                });
+                if (!result) {
+                    return res.status(404).send(JSON.stringify({
+                        status: 404,
+                        message: "Token not found"
+                    }));
+                }
+                const expiredDate = new Date(result.end);
+                if (expiredDate < new Date()) {
+                    return res.status(400).send(JSON.stringify({
+                        status: 400,
+                        message: "Token expired"
+                    }));
+                }
+                yield verify_model_1.default.deleteMany({
+                    email: email
+                });
+                return res.status(200).send(JSON.stringify({
+                    status: 200,
+                    message: "Email verify successfully"
+                }));
+            }
+            catch (error) {
+                if (error) {
+                    return res.status(500).send(JSON.stringify({
+                        status: 500,
+                        message: "Server error"
+                    }));
+                }
+            }
         });
     }
     auth(req, res) {
