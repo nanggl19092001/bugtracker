@@ -3,6 +3,7 @@ import { HomeContext } from "../../Context/HomeContext";
 
 function Profile(props) {
   const [isEdit, setIsEdit] = useState(true);
+  
   const [isLoading, setIsLoading] = useState(false);
   const { SERVER_DOMAIN, token } = useContext(HomeContext);
 
@@ -156,6 +157,9 @@ function Profile(props) {
               id="time"
               className="w-full text-blue-500 p-2 border border-gray-400 rounded focus:outline-none focus:border-blue-500 focus:border-2"
             />
+          </div>
+          <div>
+            <button>Change Password</button>
           </div>
           <div className="flex items-center w-full justify-end mt-4">
             <button
