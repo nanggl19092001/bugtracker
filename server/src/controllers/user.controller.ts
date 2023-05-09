@@ -730,7 +730,7 @@ class UserController implements UserControllerInterface{
     }
 
     async alterUserProfile(req: any, res: any) {
-        const { firstname, lastname } = req.body
+        const { firstname, lastname, phone, address } = req.body
 
         if(!firstname || !lastname ) {
             return res.status(400).send(JSON.stringify({
@@ -743,7 +743,9 @@ class UserController implements UserControllerInterface{
             _id: req.user.id
         }, {
             firstname: firstname,
-            lastname: lastname
+            lastname: lastname,
+            phone: phone,
+            address: address
         }).then( result => {
             return res.status(200).send(JSON.stringify({
                 status: 200,
