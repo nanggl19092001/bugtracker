@@ -24,6 +24,7 @@ export const HomeProvider = ({ children }) => {
     error,
     isLoading,
   } = GetProject(`${SERVER_DOMAIN}/user/project?token=${token}`, reload);
+  
   return (
     <HomeContext.Provider value={{ token,SERVER_DOMAIN, page, setPage, user, reload, setReload,
      project, error, isLoading, profile, setProfile, reloadUser, setReloadUser}}>

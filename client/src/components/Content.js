@@ -12,6 +12,7 @@ function Content({ id, pages }) {
   const { data: user } = GetUser(
     `${SERVER_DOMAIN}/user/profile?token=${token}`, reloadUser
   );
+  console.log(user);
   return (
     <div className="col-span-4 bg-gray-200 min-h-screen xl:col-span-7">
       <Header />
