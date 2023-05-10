@@ -48,6 +48,7 @@ function Profile(props) {
 
   const handleTab = (e) => {
     e.preventDefault();
+    setMessage("");
     setIsChangePw(!isChangePw);
   };
 
@@ -70,16 +71,16 @@ function Profile(props) {
         if (resJson.status === 200) {
           setIsEdit(true);
           props.setReload(!props.reload);
-          setMessage(resJson.message)
+          setMessage(resJson.message);
         } else {
-          setMessage(resJson.message)
+          setMessage(resJson.message);
         }
         setIsLoading(false);
       } catch (error) {
         console.log(error);
       }
-    }else{
-      setMessage("Confirm password not match")
+    } else {
+      setMessage("Confirm password not match");
     }
   };
   return (
@@ -301,45 +302,32 @@ function Profile(props) {
                 className="w-full p-2 text-blue-500 border border-gray-400 rounded focus:outline-none focus:border-blue-500 focus:border-2"
               />
             </div>
-            <div
-              className={`flex flex-row justify-start gap-1 ${
-                props.user.oauth === true ? `hidden` : ""
-              }`}
-            >
-              <button
-                onClick={(e) => {
-                  handleTab(e);
-                }}
-              >
-                Change Password{" "}
-              </button>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
-                />
-              </svg>
-            </div>
           </div>
-          <div className="flex items-center w-full justify-end mt-4">
+          <div className="flex items-center w-full justify-end gap-2 mt-4">
             <button
-              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400 disabled:opacity-50"
+              className="bg-slate-400 text-white p-2 rounded hover:bg-slate-500"
+              onClick={(e) => {
+                handleTab(e);
+              }}
+            >
+              Back
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50"
               onClick={handleChangePassword}
             >
               {(isLoading && "Saving...") || "Save"}
             </button>
           </div>
         </form>
-        <div className="w-full mx-2">{message}</div>
+        {message && (
+          <div
+            className="bg-red-100 rounded-lg py-5 px-6 my-4 text-base red-yellow-700"
+            role="alert"
+          >
+            {message}
+          </div>
+        )}
       </div>
     </div>
   );

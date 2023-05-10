@@ -25,9 +25,9 @@ function ProjectDetail({ id }) {
       {thisProject &&
         thisProject.map((project) => (
           <div className="mb-4" key={project.project._id}>
-            <h2 className="inline text-xl font-bold">{project.project.name}</h2>
+            <h2 className="inline text-xl font-semibold">{project.project.name}</h2>
             <button
-              className="inline float-right w-20 hover:text-white"
+              className="inline float-right w-20 font-bold hover:scale-105"
               onClick={() => history("/")}
             >
               <svg
