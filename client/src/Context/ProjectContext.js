@@ -8,7 +8,7 @@ export const ProjectContext = createContext({});
 
 export const ProjectProvider = ({ children }) => {
   const idParam = useParams();
-  const projectId = idParam.id;
+  let projectId = idParam.id;
   const { token } = useContext(AppContext);
   const [reload, setReload] = useState(false);
   const { data: member, isLoading: userIsLoading } = GetUser(

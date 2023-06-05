@@ -1,5 +1,6 @@
-import { useState } from "react";
-import Pagination from "../button/Pagination";
+import { useContext, useState } from "react";
+import Pagination from "../../button/Pagination";
+import { HomeContext } from "../../../Context/HomeContext";
 
 function TicketTable(props) {
   const limit = 5;
@@ -9,6 +10,12 @@ function TicketTable(props) {
   let page = [];
   for (let i = 1; i <= totalPage; i++) {
     page.push(i);
+  }
+
+  const {project} = useContext(HomeContext);
+  const showNameProject = (id) => {
+     return project && project.filter((project) => project.project._id === id)
+     .map((item) => item.project.name)
   }
   return (
     <>
@@ -28,7 +35,7 @@ function TicketTable(props) {
                   ${props.ticketChoose === item._id ? "bg-slate-200" : ""}`}
               key={item._id}
               onClick={() => {
-                //   chooseTicket(item._id);
+                  props.setTicketChoose(item._id)
               }}
             >
               <td className="whitespace-nowrap overflow-hidden text-ellipsis font-normal">
@@ -38,7 +45,7 @@ function TicketTable(props) {
                 {item.description}
               </td>
               <td className="whitespace-nowrap overflow-hidden text-ellipsis font-light italic">
-                {item.project}
+                {item.project && showNameProject(item.project)}
               </td>
               <td className="relative"></td>
             </tr>

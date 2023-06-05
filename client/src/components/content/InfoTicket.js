@@ -4,7 +4,7 @@ import { ProjectContext } from "../../Context/ProjectContext";
 import { convertTimeToDMY, countTimeAgo } from "../../utils/ConvertTime";
 import ModalDelete from "../notify/ModalDelete";
 
-function InfoTicket(props) {
+function  InfoTicket(props) {
   const { token, SERVER_DOMAIN } = useContext(HomeContext);
   const [showModal, setShowModal] = useState(false);
   const { member } = useContext(ProjectContext);
@@ -145,7 +145,7 @@ function InfoTicket(props) {
                   Creator
                 </h2>
                 <p className="text-sm text-gray-500 font-semibold">
-                  {handleMemberName(item.creator)}
+                  {/* {handleMemberName(item.creator)} */}
                 </p>
               </div>
               <div className="2xl:col-span-2">
@@ -153,7 +153,7 @@ function InfoTicket(props) {
                   Assignee
                 </h2>
                 <q className="text-sm text-gray-500 italic">
-                  {handleMemberAssignee(item.asignee)}
+                  {/* {handleMemberAssignee(item.asignee)} */}
                 </q>
               </div>
             </div>
@@ -161,11 +161,6 @@ function InfoTicket(props) {
               <h2 className="p-1 bg-slate-200 text-blue-500 text-sm font-bold w-fit rounded-md">
                 Documents
               </h2>
-              {/* <UploadFile
-                domain={SERVER_DOMAIN}
-                ticketId={item._id}
-                token={token}
-              /> */}
             </div>
           </div>
         ))}

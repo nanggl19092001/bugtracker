@@ -14,7 +14,7 @@ const { id } = useParams();
   const { member } = useContext(ProjectContext);
   const { SERVER_DOMAIN, token } = useContext(HomeContext);
   const {
-    data: ticket,
+    data: ticket, 
     count,
     isLoading,
   } = GetProject(

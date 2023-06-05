@@ -139,7 +139,7 @@ function CommentProject(props) {
         </div>
         <div className="flex items-center py-2">
           <textarea
-            className="w-[90%] p-2 border border-gray-200 rounded focus:outline-none focus:border-blue-500 focus:border-2 resize-none"
+            className="w-[90%] p-2 border border-gray-200 rounded focus:outline-none focus:border-blue-500"
             type="text"
             placeholder="Input your comment"
             value={comment}

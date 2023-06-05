@@ -27,7 +27,7 @@ function ProjectDetail({ id }) {
           <div className="mb-4" key={project.project._id}>
             <h2 className="inline text-xl font-semibold">{project.project.name}</h2>
             <button
-              className="inline float-right w-20 font-bold hover:scale-105"
+              className="inline float-right w-20 hover:font-bold hover:scale-105 duration-200"
               onClick={() => history("/")}
             >
               <svg
